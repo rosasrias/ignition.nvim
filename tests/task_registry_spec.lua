@@ -1,5 +1,5 @@
-local task_registry = require "code-runner.task_registry"
-local task = require "code-runner.task"
+local task_registry = require "ignition.task_registry"
+local task = require "ignition.task"
 
 local function spec(id, name)
   return {
@@ -175,7 +175,7 @@ T.it("acceptance: el registro no toca el Runner Registry (independencia)", funct
   T.eq(task_registry.get("go.run").id, "go.run")
 
   -- el Runner Registry (actions/registry) sigue intacto por su cuenta:
-  local actions_registry = require "code-runner.actions.registry"
+  local actions_registry = require "ignition.actions.registry"
   T.falsy(actions_registry.get, "api diferente: sin get propio, es runner-only")
   T.truthy(actions_registry.list, "sigue exponiendo su API runner")
 end)

@@ -1,4 +1,4 @@
-# CodeRunner.nvim Engineering Tasks
+# Ignition.nvim Engineering Tasks
 
 Tasks are intentionally small and bounded.
 
@@ -156,7 +156,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/task.lua` (puro, sin dependencias de
+- Nuevo módulo Core `lua/ignition/task.lua` (puro, sin dependencias de
   vim/UI): `KINDS`, `id()`, `validate()`, `valid()`, `new()`, `new_or_error()`,
   `from_catalog()`.
 - `task.id(runner, name)` genera identidad estable y determinística
@@ -227,7 +227,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/command.lua` (puro, sin vim/shell/UI):
+- Nuevo módulo Core `lua/ignition/command.lua` (puro, sin vim/shell/UI):
   Modelo `CommandSpec = { executable, args, cwd, env }` (CONTRACTS §8).
 - API pública del módulo:
   - `parse(cmd) -> CommandSpec` : shorthand string → executable + args,
@@ -291,7 +291,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/result.lua` (puro, sin vim/UI):
+- Nuevo módulo Core `lua/ignition/result.lua` (puro, sin vim/UI):
   Modelo `Result = { code, signal, stdout, stderr, duration }` (CONTRACTS §7),
   independiente de la terminal.
 - API pública:
@@ -360,7 +360,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/execution.lua` (puro, sin vim/state/
+- Nuevo módulo Core `lua/ignition/execution.lua` (puro, sin vim/state/
   terminal): entidad de primera clase `Execution = { id, task_id, context,
   command, status, started_at, finished_at, result }` — CONTRACTS §5.
 - **Identidad única**: `create()` asigna `id` creciente (`_next_id`, inyectable
@@ -430,7 +430,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/task_registry.lua` (puro): **Task
+- Nuevo módulo Core `lua/ignition/task_registry.lua` (puro): **Task
   Registry** por ID estable (CONTRACTS §16), separado conceptualmente del
   Runner Registry legacy (`actions/registry.lua`).
 - API: `register` (acepta TaskSpec o Task ya construido; normaliza con
@@ -495,7 +495,7 @@ DONE
 ### Resultado (2026-09-01)
 
 Auditoría de dependencias (`ARCH-007`): se inventariaron los 25+ módulos de
-`lua/code-runner`, se clasificaron por capa (UI / Application / Core /
+`lua/ignition`, se clasificaron por capa (UI / Application / Core /
 Adapters) y se contrastó cada dependencia contra `BOUNDARIES.md`.
 
 **Core limpio (objetivo alcanzado en ARCH-002..006)**: `task.lua`,
@@ -561,12 +561,12 @@ DONE
 
 - El state machine del ciclo de vida ya venía definido en `execution.lua`
   (STATUSES + TRANSITIONS + transition/start/running/finish/cancel, ARCH-005).
-- EXEC-001 añade la capa que lo **conduce y observa**: `lua/code-runner/engine.lua`
+- EXEC-001 añade la capa que lo **conduce y observa**: `lua/ignition/engine.lua`
   (Core puro), un engine mínimo que orquesta created → starting → running →
   success|failed|cancelled sobre el modelo y anuncia cada transición válida a
   un listener inyectable (`set_listener(fn)`, nil para desactivar).
 - El listener es el puente hacia EXEC-007 (Execution Events): `events.lua`
-  mapeará estas transiciones a las autocmds `CodeRunner*` sin que el modelo ni
+  mapeará estas transiciones a las autocmds `Ignition*` sin que el modelo ni
   el engine dependan de vim.
 - El Process Adapter real (spawn/stream/terminate) NO está en este paso: es
   EXEC-002. El engine es la cebolla del ciclo de vida, no el spawner.
@@ -593,7 +593,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo `lua/code-runner/process.lua` (Core puro, BOUNDARIES §7):
+- Nuevo `lua/ignition/process.lua` (Core puro, BOUNDARIES §7):
   Puerto inyectable del Process Adapter (CONTRACTS §19). Define la interfaz
   `spawn/send/terminate` sin dependencia de `vim.fn.jobstart`, `vim.system`
   ni `termopen`.
@@ -626,7 +626,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo `lua/code-runner/stream.lua` (Core puro, BOUNDARIES §7): normaliza la
+- Nuevo `lua/ignition/stream.lua` (Core puro, BOUNDARIES §7): normaliza la
   salida de un proceso a líneas completas EN ORDEN, sin partir líneas por el
   límite arbitrario de los chunks y conservando el canal (`stdout`|`stderr`).
 - `stream.new({on_line, on_stdout, on_stderr})` → collector con
@@ -662,7 +662,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo `lua/code-runner/cancel.lua` (Core puro, BOUNDARIES §7): cancelación
+- Nuevo `lua/ignition/cancel.lua` (Core puro, BOUNDARIES §7): cancelación
   determinista por Execution (EXEC-004), en contraposición al `state.set
   "cancelled"` global de hoy.
 - `cancel.cancel(exec, opts)` con:
@@ -699,7 +699,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo `lua/code-runner/restart.lua` (Core puro, BOUNDARIES §7): re-ejecutar
+- Nuevo `lua/ignition/restart.lua` (Core puro, BOUNDARIES §7): re-ejecutar
   SIEMPRE como una Execution nueva (EXEC-005).
 - `restart.restart(prev, spec)` → crea una Execution fresca (id nuevo, status
   `created`, timestamps/result nil) heredando task_id/context/command de `prev`
@@ -730,7 +730,7 @@ DONE
 
 ### Resultado (2026-09-01)
 
-- Nuevo `lua/code-runner/result_handler.lua` (Core puro, BOUNDARIES §7):
+- Nuevo `lua/ignition/result_handler.lua` (Core puro, BOUNDARIES §7):
   convierte la terminación (on_exit: code/signal) en un Result (CONTRACTS §7)
   y lo adjunta a la Execution vía `engine.finish`.
 - `result_handler.complete(exec, opts)` con:
@@ -764,14 +764,14 @@ DONE
 
 ### Resultado (2026-10-09)
 
-- `lua/code-runner/lifecycle_events.lua` (Core puro, ya existente) formalizado
-  como contrato: `event_for/names/exits` con paridad `CodeRunnerStart/
+- `lua/ignition/lifecycle_events.lua` (Core puro, ya existente) formalizado
+  como contrato: `event_for/names/exits` con paridad `IgnitionStart/
   Success/Failed/Cancelled + Exit`, `created/starting` silenciosos como
   `events.lua` legacy. `data()` deriva payload de `Execution`
   (`status/action/task_id/command/cwd/filetype/code`); `cwd` ahora prefiere
   `command.cwd` canónico (CONTRACTS §8) con fallback a `ctx`/project root.
   `for_transition/event_names`-a descriptores en orden, sin side effects.
-- `lua/code-runner/engine.lua`: `set_listener` valida `function|nil` (assert,
+- `lua/ignition/engine.lua`: `set_listener` valida `function|nil` (assert,
   programmer error) y `emit` aísla con `pcall` — un listener que lanza no
   rompe la transición (robustez EXEC-007).
 - Tests: `lifecycle_events_spec.lua` (13 tests) + 2 nuevos en
@@ -824,7 +824,7 @@ sus caminos productivos; excepciones restantes explícitas y delimitadas.
 
 ### Resultado slice 1 — tracking Engine sobre el job real
 
-- Nuevo `lua/code-runner/terminal/tracking.lua` (dueño de `current_exec`):
+- Nuevo `lua/ignition/terminal/tracking.lua` (dueño de `current_exec`):
   `start(cmd, key, label)` crea la Execution con `task.id(key, label)`
   (ADR-002) y la lleva a running; `finish(code, expected)` con identity guard
   (on_exit tardío ignorado); `cancel()`/`fail_launch()`; `get()/events()` para
@@ -884,7 +884,7 @@ reconstruir la intención porque `last` persiste `vars` (`$testName`, ...)
 e historial persiste `vars` desde este slice (`history.add` opts `vars`,
 clonadas). Sin vars, solo replay del comando guardado (siempre persistido).
 
-- Nuevo `lua/code-runner/task_resolve.lua` (Application, extraído por
+- Nuevo `lua/ignition/task_resolve.lua` (Application, extraído por
   responsabilidad con contrato claro — no por líneas): `resolve(task_id,
   {lang, test_name})` → def `{label, template, key}` o `(nil, reason)` con
   `no-catalog-entry|task-desconocida|command-funcion|test-no-aplica`.
@@ -925,7 +925,7 @@ clonadas). Sin vars, solo replay del comando guardado (siempre persistido).
 
 ### Slice 5 — spawn por el puerto con PTY (2026-10-09)
 
-- Nuevo `lua/code-runner/terminal/pty.lua`: adapter `spawn/send/terminate`
+- Nuevo `lua/ignition/terminal/pty.lua`: adapter `spawn/send/terminate`
   sobre `termopen` (CONTRACTS §19). Límites explícitos: sin `on_stdout` (el
   PTY vuelca al buffer), `signal = nil` (termopen no entrega), `opts.buf`
   obligatorio. Normaliza el fallo (`0` y `-1` → nil+err; el legacy solo
@@ -941,7 +941,7 @@ clonadas). Sin vars, solo replay del comando guardado (siempre persistido).
   Suite: 586 pass · 0 fail · 2 skip.
 ### Slice 6 — workflow sobre el Engine con adapter headless (2026-10-09)
 
-- Nuevo `lua/code-runner/headless.lua`: contrato `process` sobre `jobstart`
+- Nuevo `lua/ignition/headless.lua`: contrato `process` sobre `jobstart`
   (verificado con `process.validate_adapter`, intercambiable a nivel
   contrato). Límites explícitos: stdout/stderr bufferizados disponibles pero
   el workflow los ignora (como antes), `signal = nil`.
@@ -1101,7 +1101,7 @@ Status:
 DONE (2026-10-09)
 ```
 
-Scope: define the declarative `RunnerSpec` contract (`lua/code-runner/
+Scope: define the declarative `RunnerSpec` contract (`lua/ignition/
 runner.lua`: id, filetypes, project marker names, TaskSpecs — no function
 values, no filesystem access, no infrastructure imports) with pure
 validation, plus a conformance test characterizing current runners
@@ -1138,7 +1138,7 @@ closures y paridad funcional por ruta, sin big-bang).
 
 ### Base previa — resolver puro de candidatos (2026-10-10)
 
-`lua/code-runner/resolve.lua` (Core puro, solo requiere `runner.lua`):
+`lua/ignition/resolve.lua` (Core puro, solo requiere `runner.lua`):
 `resolve({ runners, context })` → `{ candidates }` determinista, sin tocar
 filesystem ni ejecutar nada. Política (ADR-017): filetype/extension = 2pts,
 marker = 1pt, 0pts = no candidato; orden score↓, id↑; tareas con

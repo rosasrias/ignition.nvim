@@ -1,6 +1,6 @@
-local process = require "code-runner.process"
-local headless = require "code-runner.headless"
-local shell = require "code-runner.shell"
+local process = require "ignition.process"
+local headless = require "ignition.headless"
+local shell = require "ignition.shell"
 
 T.section("headless: respeta el contrato del puerto (slice 6)")
 

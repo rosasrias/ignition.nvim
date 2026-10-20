@@ -12,7 +12,7 @@ end
 _G.T = dofile(plug_root .. "/tests/runner.lua")
 _G.PLUG_ROOT = plug_root
 
-require("code-runner").setup {}
+require("ignition").setup {}
 
 dofile(plug_root .. "/tests/config_spec.lua")
 dofile(plug_root .. "/tests/shell_spec.lua")

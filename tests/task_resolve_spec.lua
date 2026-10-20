@@ -1,11 +1,11 @@
-local resolve_mod = require "code-runner.task_resolve"
-local task = require "code-runner.task"
-local config = require "code-runner.config"
+local resolve_mod = require "ignition.task_resolve"
+local task = require "ignition.task"
+local config = require "ignition.config"
 
 T.section("task_resolve: catálogo por identidad estable")
 
 T.it("resuelve un label vigente a su plantilla actual", function()
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local label = entry.__order[1]
   local id = task.id("go", label)
 
@@ -21,16 +21,16 @@ T.it("resuelve un label vigente a su plantilla actual", function()
 end)
 
 T.it("tras cambiar la plantilla, resuelve la nueva (no la guardada)", function()
-  local registry = require "code-runner.actions.registry"
+  local registry = require "ignition.actions.registry"
   registry.reset()
-  require("code-runner").register_action {
+  require("ignition").register_action {
     id = "op_evolve",
     filetypes = { "lua" },
     kind = "run",
     command = "mytool --opt A",
   }
 
-  local entry = require("code-runner.actions").get_actions().lua
+  local entry = require("ignition.actions").get_actions().lua
   local label
   for _, l in ipairs(entry.__order) do
     if l:find("op_evolve", 1, true) then
@@ -39,7 +39,7 @@ T.it("tras cambiar la plantilla, resuelve la nueva (no la guardada)", function()
   end
   local id = task.id("lua", label)
 
-  require("code-runner").register_action {
+  require("ignition").register_action {
     id = "op_evolve",
     filetypes = { "lua" },
     kind = "run",
@@ -75,7 +75,7 @@ end)
 T.section("task_resolve: test contextual reconstruido")
 
 T.it("reconstruye el test desde $testName persistido y lo verifica", function()
-  local context = require "code-runner.context"
+  local context = require "ignition.context"
   local label = context.test_action("go", { test = { name = "TestFoo" } })
   local id = task.id("go", label)
 
@@ -87,7 +87,7 @@ T.it("reconstruye el test desde $testName persistido y lo verifica", function()
 end)
 
 T.it("sin test_name no hay resolución silenciosa del test", function()
-  local context = require "code-runner.context"
+  local context = require "ignition.context"
   local label = context.test_action("go", { test = { name = "TestFoo" } })
   local id = task.id("go", label)
 
@@ -98,7 +98,7 @@ T.it("sin test_name no hay resolución silenciosa del test", function()
 end)
 
 T.it("test_name que no coincide no resuelve", function()
-  local context = require "code-runner.context"
+  local context = require "ignition.context"
   local label = context.test_action("go", { test = { name = "TestFoo" } })
   local id = task.id("go", label)
 
@@ -110,7 +110,7 @@ end)
 
 T.it("identidad independiente de iconos: resuelve con iconos cambiados", function()
   local saved = config.options.icons.run
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local label = entry.__order[1]
   local id = task.id("go", label)
 
@@ -124,7 +124,7 @@ end)
 T.section("task_resolve: vía registry primero (switch de selección)")
 
 T.it("custom con id propio sobrevive al refresh y resuelve", function()
-  local registry = require "code-runner.runner_registry"
+  local registry = require "ignition.runner_registry"
   registry.reset()
   registry.register {
     id = "zzcustom",
@@ -142,7 +142,7 @@ T.it("custom con id propio sobrevive al refresh y resuelve", function()
 end)
 
 T.it("en colisión de id manda el built-in (override va por actions.registry)", function()
-  local registry = require "code-runner.runner_registry"
+  local registry = require "ignition.runner_registry"
   registry.reset()
   registry.register {
     id = "go",
@@ -159,10 +159,10 @@ T.it("en colisión de id manda el built-in (override va por actions.registry)", 
 end)
 
 T.it("sin registro usa el catálogo (compat explícita)", function()
-  local registry = require "code-runner.runner_registry"
+  local registry = require "ignition.runner_registry"
   registry.reset()
 
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local id = task.id("go", entry.__order[1])
 
   local def = resolve_mod.resolve(id, { lang = "go" })
@@ -172,7 +172,7 @@ T.it("sin registro usa el catálogo (compat explícita)", function()
 end)
 
 T.it("la resolución no depende del orden del catálogo", function()
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local last_label = entry.__order[#entry.__order]
   local id = task.id("go", last_label)
 
@@ -184,8 +184,8 @@ T.it("la resolución no depende del orden del catálogo", function()
 end)
 
 T.it("el re-seed no ensombrece plantillas nuevas (frescura)", function()
-  local registry = require "code-runner.runner_registry"
-  local runners = require "code-runner.runners"
+  local registry = require "ignition.runner_registry"
+  local runners = require "ignition.runners"
   registry.reset()
 
   runners.seed({ zzx = { ["Run"] = "OLD cmd", __order = { "Run" } } }, {})

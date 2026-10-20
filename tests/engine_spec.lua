@@ -1,4 +1,4 @@
-local engine = require "code-runner.engine"
+local engine = require "ignition.engine"
 
 local function fresh_spec(now)
   return {

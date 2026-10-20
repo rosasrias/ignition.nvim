@@ -1,4 +1,4 @@
-local tracking = require "code-runner.terminal.tracking"
+local tracking = require "ignition.terminal.tracking"
 
 local function fresh()
   tracking.reset()
@@ -110,9 +110,9 @@ end)
 
 T.it("el catálogo real con && se modela sin excepción silenciosa", function()
   fresh()
-  local command = require "code-runner.command"
-  local shell = require "code-runner.shell"
-  local catalog = require("code-runner.actions").get_actions()
+  local command = require "ignition.command"
+  local shell = require "ignition.shell"
+  local catalog = require("ignition.actions").get_actions()
 
   local chains, modeled = 0, 0
   for _, entry in pairs(catalog) do
@@ -198,7 +198,7 @@ T.it("eventos: finish expone Success+Exit, cancel Cancelled+Exit", function()
   for _, e in ipairs(tracking.events()) do
     names[#names + 1] = e.name
   end
-  T.eq({ "CodeRunnerSuccess", "CodeRunnerExit" }, names)
+  T.eq({ "IgnitionSuccess", "IgnitionExit" }, names)
 
   tracking.start("sleep 30", "go", "Run")
   tracking.cancel()
@@ -207,7 +207,7 @@ T.it("eventos: finish expone Success+Exit, cancel Cancelled+Exit", function()
   for _, e in ipairs(tracking.events()) do
     names[#names + 1] = e.name
   end
-  T.eq({ "CodeRunnerCancelled", "CodeRunnerExit" }, names)
+  T.eq({ "IgnitionCancelled", "IgnitionExit" }, names)
 end)
 
 T.section("tracking: dispatch único al bus de Neovim (slice 4)")
@@ -224,8 +224,8 @@ end
 T.it("dispatch dispara Success+Exit exactamente una vez", function()
   fresh()
   local seen = {}
-  listen_count("CodeRunnerSuccess", seen)
-  listen_count("CodeRunnerExit", seen)
+  listen_count("IgnitionSuccess", seen)
+  listen_count("IgnitionExit", seen)
 
   local id = tracking.start("echo ok", "go", "Run")
   tracking.finish(0, id)
@@ -244,12 +244,12 @@ end)
 
 T.it("events.enabled=false no dispara", function()
   fresh()
-  local config = require "code-runner.config"
+  local config = require "ignition.config"
   local saved = config.options.events.enabled
   config.options.events.enabled = false
 
   local seen = {}
-  listen_count("CodeRunnerSuccess", seen)
+  listen_count("IgnitionSuccess", seen)
 
   local id = tracking.start("echo ok", "go", "Run")
   tracking.finish(0, id)

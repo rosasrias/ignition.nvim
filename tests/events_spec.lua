@@ -1,6 +1,6 @@
-local state = require "code-runner.state"
-local config = require "code-runner.config"
-local events = require "code-runner.events"
+local state = require "ignition.state"
+local config = require "ignition.config"
+local events = require "ignition.events"
 
 local captured = {}
 
@@ -13,19 +13,19 @@ local function listen(pattern)
   })
 end
 
-T.it("state.set running emite CodeRunnerStart", function()
+T.it("state.set running emite IgnitionStart", function()
   captured = {}
-  listen "CodeRunnerStart"
+  listen "IgnitionStart"
   state.set("running", { action = "Run", cwd = "C:/p", filetype = "go" })
   T.eq(1, #captured)
-  T.eq("CodeRunnerStart", captured[1].pattern)
+  T.eq("IgnitionStart", captured[1].pattern)
   T.eq("go", captured[1].data.filetype)
 end)
 
-T.it("state.set success emite CodeRunnerSuccess y CodeRunnerExit", function()
+T.it("state.set success emite IgnitionSuccess y IgnitionExit", function()
   captured = {}
-  listen "CodeRunnerSuccess"
-  listen "CodeRunnerExit"
+  listen "IgnitionSuccess"
+  listen "IgnitionExit"
 
   state.set("running", { action = "Run", cwd = "C:/p", filetype = "py" })
   captured = {} -- borrar el Start
@@ -36,27 +36,27 @@ T.it("state.set success emite CodeRunnerSuccess y CodeRunnerExit", function()
     patterns[#patterns + 1] = c.pattern
   end
   table.sort(patterns)
-  T.eq("CodeRunnerExit", patterns[1])
-  T.eq("CodeRunnerSuccess", patterns[2])
+  T.eq("IgnitionExit", patterns[1])
+  T.eq("IgnitionSuccess", patterns[2])
   T.eq("success", captured[2].data.status)
   T.eq(0, captured[2].data.code)
   T.eq("py", captured[2].data.filetype, "conserva filetype del job")
 end)
 
-T.it("state.set failed emite CodeRunnerFailed y CodeRunnerExit", function()
+T.it("state.set failed emite IgnitionFailed y IgnitionExit", function()
   captured = {}
-  listen "CodeRunnerFailed"
-  listen "CodeRunnerExit"
+  listen "IgnitionFailed"
+  listen "IgnitionExit"
   state.set("running", {})
   captured = {}
   state.set("failed", { code = 1 })
 
   local has_failed, has_exit = false, false
   for _, c in ipairs(captured) do
-    if c.pattern == "CodeRunnerFailed" then
+    if c.pattern == "IgnitionFailed" then
       has_failed = true
       T.eq(1, c.data.code)
-    elseif c.pattern == "CodeRunnerExit" then
+    elseif c.pattern == "IgnitionExit" then
       has_exit = true
     end
   end
@@ -64,19 +64,19 @@ T.it("state.set failed emite CodeRunnerFailed y CodeRunnerExit", function()
   T.truthy(has_exit)
 end)
 
-T.it("state.set cancelled emite CodeRunnerCancelled y CodeRunnerExit", function()
+T.it("state.set cancelled emite IgnitionCancelled y IgnitionExit", function()
   captured = {}
-  listen "CodeRunnerCancelled"
-  listen "CodeRunnerExit"
+  listen "IgnitionCancelled"
+  listen "IgnitionExit"
   state.set("running", {})
   captured = {}
   state.set "cancelled"
 
   local has_cancelled, has_exit = false, false
   for _, c in ipairs(captured) do
-    if c.pattern == "CodeRunnerCancelled" then
+    if c.pattern == "IgnitionCancelled" then
       has_cancelled = true
-    elseif c.pattern == "CodeRunnerExit" then
+    elseif c.pattern == "IgnitionExit" then
       has_exit = true
     end
   end
@@ -86,17 +86,17 @@ end)
 
 T.it("state.set idle no emite eventos", function()
   captured = {}
-  listen "CodeRunnerStart"
-  listen "CodeRunnerExit"
+  listen "IgnitionStart"
+  listen "IgnitionExit"
   state.set "idle"
   T.eq(0, #captured)
 end)
 
 T.it("events.enabled=false no emite nada", function()
   captured = {}
-  listen "CodeRunnerStart"
-  listen "CodeRunnerExit"
-  listen "CodeRunnerSuccess"
+  listen "IgnitionStart"
+  listen "IgnitionExit"
+  listen "IgnitionSuccess"
 
   local saved = config.options.events.enabled
   config.options.events.enabled = false

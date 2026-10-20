@@ -1,6 +1,6 @@
-local project = require "code-runner.project"
-local shell = require "code-runner.shell"
-local config = require "code-runner.config"
+local project = require "ignition.project"
+local shell = require "ignition.shell"
+local config = require "ignition.config"
 
 local tmpdir = vim.fn.tempname() .. "/cr_proj_test"
 vim.fn.mkdir(tmpdir, "p")

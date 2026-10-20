@@ -1,6 +1,6 @@
 # OpenCode Development Workflow
 
-This document defines how an AI coding session should operate in CodeRunner.nvim.
+This document defines how an AI coding session should operate in Ignition.nvim.
 
 ______________________________________________________________________
 

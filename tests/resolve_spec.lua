@@ -1,4 +1,4 @@
-local resolve = require "code-runner.resolve"
+local resolve = require "ignition.resolve"
 
 local function go_runner(over)
   local base = {
@@ -319,10 +319,10 @@ T.section("resolve: caracterización con el catálogo real (sin migrar selecció
 -- contextos realistas. Caracteriza la salida esperada del resolver con
 -- datos reales; la selección productiva (picker por labels) NO cambia.
 local function project_catalog()
-  local runner_mod = require "code-runner.runner"
-  local catalog = require("code-runner.actions").get_actions()
-  local project = require "code-runner.project"
-  local config = require "code-runner.config"
+  local runner_mod = require "ignition.runner"
+  local catalog = require("ignition.actions").get_actions()
+  local project = require "ignition.project"
+  local config = require "ignition.config"
 
   local runners, skipped_total, failed, aliases = {}, 0, {}, {}
 

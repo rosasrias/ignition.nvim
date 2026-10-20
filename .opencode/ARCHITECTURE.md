@@ -1,4 +1,4 @@
-# CodeRunner.nvim Architecture
+# Ignition.nvim Architecture
 
 ## Status
 
@@ -12,7 +12,7 @@ ______________________________________________________________________
 
 # 1. Architectural Goal
 
-CodeRunner.nvim must support:
+Ignition.nvim must support:
 
 ```text
 many languages
@@ -617,7 +617,7 @@ ______________________________________________________________________
 
 Project-local configuration may define custom tasks and overrides.
 
-Project configuration is executable Lua when `.code-runner.lua` is used.
+Project configuration is executable Lua when `.ignition.lua` is used.
 
 This must be treated as trusted project code.
 

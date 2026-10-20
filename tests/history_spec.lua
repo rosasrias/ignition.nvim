@@ -1,6 +1,6 @@
-local cr = require "code-runner"
-local history = require "code-runner.history"
-local config = require "code-runner.config"
+local cr = require "ignition"
+local history = require "ignition.history"
+local config = require "ignition.config"
 
 local tmpfile = os.tmpname()
 history._data_file = tmpfile
@@ -274,12 +274,12 @@ T.it("build_run registra el comando sustituido", function()
   vim.fn.writefile({ "print(1)" }, f)
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local picker = require "code-runner.picker"
-  local terminal = require "code-runner.terminal"
+  local picker = require "ignition.picker"
+  local terminal = require "ignition.terminal"
   local orig_select, orig_open, orig_notify = picker.select, terminal.open, terminal.notify
   local opened = {}
   picker.select = function(_, _, cb)
-    for _, label in ipairs(require("code-runner.actions").get_actions().lua.__order) do
+    for _, label in ipairs(require("ignition.actions").get_actions().lua.__order) do
       if label:find(config.options.icons.run, 1, true) and label:find("Run") then
         cb(label)
         return
@@ -305,8 +305,8 @@ T.it("run_history re-ejecuta la entrada elegida", function()
   fresh()
   history.add("pytest -q", "C:/p", "py")
 
-  local picker = require "code-runner.picker"
-  local terminal = require "code-runner.terminal"
+  local picker = require "ignition.picker"
+  local terminal = require "ignition.terminal"
   local orig_select, orig_open, orig_notify = picker.select, terminal.open, terminal.notify
   local shown, opened = nil, {}
   picker.select = function(items, _, cb)
@@ -332,7 +332,7 @@ end)
 T.it("run_history con historial vacío notifica WARN", function()
   fresh()
 
-  local terminal = require "code-runner.terminal"
+  local terminal = require "ignition.terminal"
   local orig_notify = terminal.notify
   local notified = {}
   terminal.notify = function(msg, level)

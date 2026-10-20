@@ -1,5 +1,5 @@
-local actions = require "code-runner.actions"
-local config = require "code-runner.config"
+local actions = require "ignition.actions"
+local config = require "ignition.config"
 
 T.section("actions: catálogo")
 
@@ -164,7 +164,7 @@ end)
 
 T.section("actions: C# msbuild / csc")
 
-local compiled = require "code-runner.actions.languages.compiled"
+local compiled = require "ignition.actions.languages.compiled"
 
 local csdir = vim.fn.tempname()
 vim.fn.mkdir(csdir, "p")

@@ -1,5 +1,5 @@
-local cr = require "code-runner"
-local config = require "code-runner.config"
+local cr = require "ignition"
+local config = require "ignition.config"
 
 T.section("init: resolución de acciones (build_entry)")
 
@@ -22,7 +22,7 @@ end
 -- quedado conectados, para que terminal.open arranque desde cero.
 local function kill_plugin_terminals()
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.b[b] and vim.b[b].code_runner_term then
+    if vim.b[b] and vim.b[b].ignition_term then
       pcall(vim.api.nvim_buf_delete, b, { force = true })
     end
   end
@@ -33,7 +33,7 @@ T.it("resuelve por extensión (.lua)", function()
   vim.fn.writefile({ "print(1)" }, f)
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local entry, key = cr._build_entry(require("code-runner.actions").get_actions(), fake_terminal())
+  local entry, key = cr._build_entry(require("ignition.actions").get_actions(), fake_terminal())
   T.eq("lua", key)
   T.truthy(entry and entry.__order)
 end)
@@ -44,7 +44,7 @@ T.it("resuelve por filetype cuando no hay extensión (Makefile)", function()
   vim.cmd("edit " .. vim.fn.fnameescape(f))
   vim.bo.filetype = "make" -- en uso real lo detecta Neovim
 
-  local entry, key = cr._build_entry(require("code-runner.actions").get_actions(), fake_terminal())
+  local entry, key = cr._build_entry(require("ignition.actions").get_actions(), fake_terminal())
   T.eq("make", key)
   T.truthy(entry)
 end)
@@ -56,7 +56,7 @@ T.it("notifica con extensión no soportada", function()
   vim.bo.filetype = ""
 
   local ft = fake_terminal()
-  local entry, key = cr._build_entry(require("code-runner.actions").get_actions(), ft)
+  local entry, key = cr._build_entry(require("ignition.actions").get_actions(), ft)
 
   T.falsy(entry)
   T.eq(nil, key)
@@ -69,7 +69,7 @@ T.it("la extensión tiene prioridad sobre el filetype", function()
   vim.cmd("edit " .. vim.fn.fnameescape(f))
   vim.bo.filetype = "make" -- filetype incorrecto a propósito
 
-  local _, key = cr._build_entry(require("code-runner.actions").get_actions(), fake_terminal())
+  local _, key = cr._build_entry(require("ignition.actions").get_actions(), fake_terminal())
   T.eq("lua", key)
 end)
 
@@ -124,7 +124,7 @@ T.it("_context_vars con cctx vacío no inyecta nada", function()
 end)
 
 T.it("shell substituye $testName y $entry en el comando de una task", function()
-  local shell = require "code-runner.shell"
+  local shell = require "ignition.shell"
   local cmd = shell.substitute("go test -run \"$testName\" --entry $entry", {
     ["$testName"] = "TestFoo",
     ["$entry"] = "main",
@@ -134,9 +134,9 @@ T.it("shell substituye $testName y $entry en el comando de una task", function()
 end)
 
 T.it("una task de proyecto recibe $testName y $entry desde el contexto", function()
-  local registry = require "code-runner.actions.registry"
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
+  local registry = require "ignition.actions.registry"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
 
   -- buffer go con un entry (main) y un test bajo el cursor
   local f = tmpdir .. "/ctx_task.go"
@@ -154,7 +154,7 @@ T.it("una task de proyecto recibe $testName y $entry desde el contexto", functio
   vim.cmd("edit " .. vim.fn.fnameescape(f))
   vim.api.nvim_win_set_cursor(0, { 7, 1 })
 
-  -- task del proyecto (como haría .code-runner.lua vía el registry)
+  -- task del proyecto (como haría .ignition.lua vía el registry)
   registry.reset()
   cr.register_action {
     id = "task_dev",
@@ -178,7 +178,7 @@ T.it("una task de proyecto recibe $testName y $entry desde el contexto", functio
 
   T.truthy(ok, "build_run no lanza")
 
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local label
   for _, l in ipairs(entry.__order) do
     if l:find("task_dev", 1, true) then
@@ -200,9 +200,9 @@ T.it("una task de proyecto recibe $testName y $entry desde el contexto", functio
 end)
 
 T.it("run_last reproduce una task de proyecto con sus variables de contexto", function()
-  local registry = require "code-runner.actions.registry"
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
+  local registry = require "ignition.actions.registry"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
 
   local f = tmpdir .. "/ctx_task2.go"
   vim.fn.writefile({
@@ -239,7 +239,7 @@ T.it("run_last reproduce una task de proyecto con sus variables de contexto", fu
 
   -- primera ejecución: elegimos la task
   local ok1 = pcall(cr.build_run)
-  local entry = require("code-runner.actions").get_actions().go
+  local entry = require("ignition.actions").get_actions().go
   local label
   for _, l in ipairs(entry.__order) do
     if l:find("task_test", 1, true) then
@@ -267,19 +267,19 @@ T.it("run_last reproduce una task de proyecto con sus variables de contexto", fu
 end)
 
 T.it("run_last sin ejecución previa notifica WARN", function()
-  local terminal = require "code-runner.terminal"
+  local terminal = require "ignition.terminal"
   local original_notify = terminal.notify
   local notified = {}
   terminal.notify = function(msg, level)
     table.insert(notified, { msg = msg, level = level })
   end
 
-  package.loaded["code-runner"] = nil
-  local fresh = require "code-runner"
+  package.loaded["ignition"] = nil
+  local fresh = require "ignition"
   fresh.run_last()
 
   terminal.notify = original_notify
-  package.loaded["code-runner"] = nil
+  package.loaded["ignition"] = nil
 
   T.eq(1, #notified, "una sola notificación")
   T.eq(vim.log.levels.WARN, notified[1].level)
@@ -287,23 +287,23 @@ end)
 
 T.it("setup recarga la última ejecución persistida (sobrevive al reinicio)", function()
   -- usamos la etiqueta REAL de una acción de lua (con icono)
-  local lua_entry = require("code-runner.actions").get_actions().lua
+  local lua_entry = require("ignition.actions").get_actions().lua
   local label = lua_entry.__order[#lua_entry.__order] -- la última de lua es "Run"
 
   -- persiste una 'última ejecución' como haría una sesión anterior
-  local m = vim.fn.stdpath("data") .. "/code-runner"
+  local m = vim.fn.stdpath("data") .. "/ignition"
   vim.fn.mkdir(m, "p")
   local file = m .. "/last.json"
   vim.fn.writefile({ vim.json.encode({ lang = "lua", choice = label }) }, file)
 
-  -- simulamos reinicio: recargamos code-runner y llamamos setup (que debe
+  -- simulamos reinicio: recargamos ignition y llamamos setup (que debe
   -- poblar last_choice desde disco)
-  require("code-runner.last")._data_file = file
-  package.loaded["code-runner"] = nil
-  local cr2 = require "code-runner"
+  require("ignition.last")._data_file = file
+  package.loaded["ignition"] = nil
+  local cr2 = require "ignition"
   cr2.setup {}
 
-  local terminal = require "code-runner.terminal"
+  local terminal = require "ignition.terminal"
   local original_notify = terminal.notify
   local calls = 0
   local msgs = {}
@@ -323,11 +323,11 @@ end)
 T.section("init: identidad task_id en historial y last (EXEC-009 slice 2)")
 
 T.it("build_run con tracking guarda task_id en historial y last", function()
-  local terminal = require "code-runner.terminal"
-  local tracking = require "code-runner.terminal.tracking"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
-  local last = require "code-runner.last"
+  local terminal = require "ignition.terminal"
+  local tracking = require "ignition.terminal.tracking"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
+  local last = require "ignition.last"
 
   local f = tmpdir .. "/identity.lua"
   vim.fn.writefile({ "print(1)" }, f)
@@ -369,9 +369,9 @@ T.it("build_run con tracking guarda task_id en historial y last", function()
 end)
 
 T.it("build_run sin tracking gobierna identidad por resolución", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
 
   local f = tmpdir .. "/identity_legacy.lua"
   vim.fn.writefile({ "print(1)" }, f)
@@ -380,7 +380,7 @@ T.it("build_run sin tracking gobierna identidad por resolución", function()
   local saved_hist = history._data_file
   local htmp = os.tmpname()
   history._data_file = htmp
-  require("code-runner.terminal.tracking").reset()
+  require("ignition.terminal.tracking").reset()
 
   -- open stub legacy: devuelve nil (sin tracking, p.ej. comando no
   -- modelable). La identidad IGUAL viene de la resolución (switch).
@@ -404,7 +404,7 @@ T.it("build_run sin tracking gobierna identidad por resolución", function()
 
   T.truthy(ok, "build_run no lanza")
   T.eq(1, #items)
-  T.eq(require("code-runner.task").id("lua", chosen_label), items[1].task_id,
+  T.eq(require("ignition.task").id("lua", chosen_label), items[1].task_id,
     "identidad gobernada por resolución aunque no haya tracking")
 end)
 
@@ -412,15 +412,15 @@ T.section("init: resolución operativa por task_id (EXEC-009 slice 3)")
 
 -- build_run con tracking simulado + comando que evoluciona entre lanzamientos.
 local function build_with_tracking(ext, custom_id, custom_cmd)
-  local terminal = require "code-runner.terminal"
-  local tracking = require "code-runner.terminal.tracking"
-  local picker = require "code-runner.picker"
+  local terminal = require "ignition.terminal"
+  local tracking = require "ignition.terminal.tracking"
+  local picker = require "ignition.picker"
 
   local f = tmpdir .. "/slice3." .. ext
   vim.fn.writefile({ "print(1)" }, f)
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  require("code-runner.actions.registry").reset()
+  require("ignition.actions.registry").reset()
   cr.register_action { id = custom_id, filetypes = { "lua" }, kind = "run", command = custom_cmd }
 
   local orig_select, orig_open = picker.select, terminal.open
@@ -445,10 +445,10 @@ local function build_with_tracking(ext, custom_id, custom_cmd)
 end
 
 T.it("run_last usa la plantilla vigente, no el comando guardado", function()
-  local history = require "code-runner.history"
-  local last = require "code-runner.last"
-  local terminal = require "code-runner.terminal"
-  local tracking = require "code-runner.terminal.tracking"
+  local history = require "ignition.history"
+  local last = require "ignition.last"
+  local terminal = require "ignition.terminal"
+  local tracking = require "ignition.terminal.tracking"
 
   local saved_hist, saved_last = history._data_file, last._data_file
   history._data_file, last._data_file = os.tmpname(), os.tmpname()
@@ -475,17 +475,17 @@ T.it("run_last usa la plantilla vigente, no el comando guardado", function()
 
   history._data_file, last._data_file = saved_hist, saved_last
   tracking.reset()
-  require("code-runner.actions.registry").reset()
+  require("ignition.actions.registry").reset()
   config.options = vim.deepcopy(config.defaults)
 end)
 
 T.it("run_last con tarea eliminada cae al replay legacy sin romper", function()
-  local terminal = require "code-runner.terminal"
-  local tracking = require "code-runner.terminal.tracking"
+  local terminal = require "ignition.terminal"
+  local tracking = require "ignition.terminal.tracking"
 
   tracking.reset()
   build_with_tracking("lua", "op_gone_run", "mytool --opt A")
-  require("code-runner.actions.registry").reset() -- la tarea ya no existe
+  require("ignition.actions.registry").reset() -- la tarea ya no existe
 
   local opened, notified = {}, {}
   local orig_open, orig_notify = terminal.open, terminal.notify
@@ -509,9 +509,9 @@ T.it("run_last con tarea eliminada cae al replay legacy sin romper", function()
 end)
 
 T.it("run_history con status failed re-ejecuta igual (no es autoridad viva)", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
 
   local saved_hist = history._data_file
   history._data_file = os.tmpname()
@@ -539,9 +539,9 @@ T.it("run_history con status failed re-ejecuta igual (no es autoridad viva)", fu
 end)
 
 T.it("run_history con task_id desconocida reejecuta el comando guardado", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
 
   local saved_hist = history._data_file
   history._data_file = os.tmpname()
@@ -570,10 +570,10 @@ T.it("run_history con task_id desconocida reejecuta el comando guardado", functi
 end)
 
 T.it("re-lanzar desde historial crea ejecución nueva (no reutiliza id)", function()
-  local terminal = require "code-runner.terminal"
-  local tracking = require "code-runner.terminal.tracking"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
+  local terminal = require "ignition.terminal"
+  local tracking = require "ignition.terminal.tracking"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
 
   local saved_hist = history._data_file
   history._data_file = os.tmpname()
@@ -608,14 +608,14 @@ end)
 T.section("init: switch de selección (identidad gobernada)")
 
 T.it("el picker recibe etiquetas y orden idénticos al legacy", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
 
   local f = tmpdir .. "/switch.lua"
   vim.fn.writefile({ "print(1)" }, f)
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local legacy_order = table.concat(require("code-runner.actions").get_actions().lua.__order, "\n")
+  local legacy_order = table.concat(require("ignition.actions").get_actions().lua.__order, "\n")
 
   local orig_select, orig_open = picker.select, terminal.open
   local shown = nil
@@ -637,11 +637,11 @@ T.it("el picker recibe etiquetas y orden idénticos al legacy", function()
 end)
 
 T.it("la identidad viene de la resolución, no del tracking", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
-  local history = require "code-runner.history"
-  local last = require "code-runner.last"
-  local tracking = require "code-runner.terminal.tracking"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
+  local history = require "ignition.history"
+  local last = require "ignition.last"
+  local tracking = require "ignition.terminal.tracking"
 
   local f = tmpdir .. "/switch_id.lua"
   vim.fn.writefile({ "print(1)" }, f)
@@ -676,9 +676,9 @@ T.it("la identidad viene de la resolución, no del tracking", function()
 end)
 
 T.it("closure legacy: se ejecuta por la rama explícita sin task_id", function()
-  local terminal = require "code-runner.terminal"
-  local picker = require "code-runner.picker"
-  local registry = require "code-runner.actions.registry"
+  local terminal = require "ignition.terminal"
+  local picker = require "ignition.picker"
+  local registry = require "ignition.actions.registry"
 
   local f = tmpdir .. "/switch_fn.lua"
   vim.fn.writefile({ "print(1)" }, f)
@@ -717,14 +717,14 @@ end)
 T.section("init: stop()")
 
 T.it("stop sin ejecución en marcha es un no-op (no rompe nada)", function()
-  require("code-runner.state").set("idle")
+  require("ignition.state").set("idle")
   cr.stop()
-  T.eq("idle", require("code-runner.state").get().status)
+  T.eq("idle", require("ignition.state").get().status)
 end)
 
 T.it("stop cancela el job del plugin y libera su buffer", function()
-  local terminal = require "code-runner.terminal"
-  local state = require "code-runner.state"
+  local terminal = require "ignition.terminal"
+  local state = require "ignition.state"
 
   kill_plugin_terminals()
   state.set("idle")
@@ -741,8 +741,8 @@ T.it("stop cancela el job del plugin y libera su buffer", function()
 end)
 
 T.it("stop no toca terminales externas (solo el buffer registrado)", function()
-  local terminal = require "code-runner.terminal"
-  local state = require "code-runner.state"
+  local terminal = require "ignition.terminal"
+  local state = require "ignition.state"
   local save_notify = terminal.notify
   terminal.notify = function() end
 
@@ -760,11 +760,11 @@ T.it("stop no toca terminales externas (solo el buffer registrado)", function()
   cr.stop()
 
   T.truthy(vim.api.nvim_buf_is_valid(foreign), "la terminal ajena sigue viva")
-  T.falsy(vim.b[foreign].code_runner_term, "la ajena no lleva el marcador del plugin")
+  T.falsy(vim.b[foreign].ignition_term, "la ajena no lleva el marcador del plugin")
   T.eq("terminal", vim.bo[foreign].buftype, "sigue siendo una terminal (su job intacto)")
   T.falsy(
-    vim.fn.fnamemodify(vim.api.nvim_buf_get_name(foreign), ":t") == "code-runner",
-    "su nombre es term://..., nunca code-runner"
+    vim.fn.fnamemodify(vim.api.nvim_buf_get_name(foreign), ":t") == "ignition",
+    "su nombre es term://..., nunca ignition"
   )
 
   -- limpieza: detener el job ajeno para no ensuciar los specs siguientes
@@ -778,20 +778,20 @@ end)
 T.section("init: restart()")
 
 T.it("restart sin job en marcha y sin ejecución previa notifica WARN (de run_last)", function()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   state.set("idle")
 
-  -- reinicia code-runner sin setup: last_choice queda nil (sin persistencia
+  -- reinicia ignition sin setup: last_choice queda nil (sin persistencia
   -- cargada en memoria), por lo que run_last avisa que no hay ejecución previa
-  local last_m = require "code-runner.last"
+  local last_m = require "ignition.last"
   local saved_file = last_m._data_file
   last_m._data_file = os.tmpname()
   last_m.clear()
 
-  package.loaded["code-runner"] = nil
-  local cr_fresh = require "code-runner"
+  package.loaded["ignition"] = nil
+  local cr_fresh = require "ignition"
 
-  local terminal = require "code-runner.terminal"
+  local terminal = require "ignition.terminal"
   local original_notify = terminal.notify
   local notified = {}
   terminal.notify = function(msg, level)
@@ -806,16 +806,16 @@ T.it("restart sin job en marcha y sin ejecución previa notifica WARN (de run_la
 
   terminal.notify = original_notify
   last_m._data_file = saved_file
-  package.loaded["code-runner"] = nil
-  cr = require "code-runner"
+  package.loaded["ignition"] = nil
+  cr = require "ignition"
 end)
 
 T.it("restart detiene el job en marcha de forma silenciosa", function()
   -- contrato principal de restart: el job en marcha se cancela ANTES de delegar
   -- en run_last (que es quien relanza). Se verifica la parte de stop silencioso
   -- aislada: _stop_silent cancela sin notificar.
-  local terminal = require "code-runner.terminal"
-  local state = require "code-runner.state"
+  local terminal = require "ignition.terminal"
+  local state = require "ignition.state"
   local original_notify = terminal.notify
   local notified = {}
   terminal.notify = function(msg, level)
@@ -839,21 +839,21 @@ end)
 
 T.section("plugin: comandos de usuario")
 
-T.it("registra :CodeRun, :CodeRunLast, :CodeRunHistory, :CodeRunStop y :CodeRunRestart", function()
-  dofile(PLUG_ROOT .. "/plugin/code-runner.lua")
+T.it("registra :IgnitionRun, :IgnitionRunLast, :IgnitionRunHistory, :IgnitionRunStop y :IgnitionRunRestart", function()
+  dofile(PLUG_ROOT .. "/plugin/ignition.lua")
   local cmds = vim.api.nvim_get_commands {}
-  T.truthy(cmds.CodeRun, ":CodeRun registrado")
-  T.truthy(cmds.CodeRunLast, ":CodeRunLast registrado")
-  T.truthy(cmds.CodeRunHistory, ":CodeRunHistory registrado")
-  T.truthy(cmds.CodeRunStop, ":CodeRunStop registrado")
-  T.truthy(cmds.CodeRunRestart, ":CodeRunRestart registrado")
+  T.truthy(cmds.IgnitionRun, ":IgnitionRun registrado")
+  T.truthy(cmds.IgnitionRunLast, ":IgnitionRunLast registrado")
+  T.truthy(cmds.IgnitionRunHistory, ":IgnitionRunHistory registrado")
+  T.truthy(cmds.IgnitionRunStop, ":IgnitionRunStop registrado")
+  T.truthy(cmds.IgnitionRunRestart, ":IgnitionRunRestart registrado")
 end)
 
 T.it("el guard evita doble registro", function()
   local before = vim.api.nvim_get_commands {}
-  dofile(PLUG_ROOT .. "/plugin/code-runner.lua") -- segunda carga: early return
+  dofile(PLUG_ROOT .. "/plugin/ignition.lua") -- segunda carga: early return
   local after = vim.api.nvim_get_commands {}
-  T.eq(before.CodeRun.definition, after.CodeRun.definition)
+  T.eq(before.IgnitionRun.definition, after.IgnitionRun.definition)
 end)
 
 config.options = vim.deepcopy(config.defaults)

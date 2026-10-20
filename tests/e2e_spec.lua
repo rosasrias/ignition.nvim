@@ -1,6 +1,6 @@
-local shell = require "code-runner.shell"
-local actions = require "code-runner.actions"
-local config = require "code-runner.config"
+local shell = require "ignition.shell"
+local actions = require "ignition.actions"
+local config = require "ignition.config"
 
 -- Blindaje: los E2E siempre corren con el valor real de la plataforma,
 -- aunque otros tests hayan tocado shell.IS_WIN
@@ -56,7 +56,7 @@ if vim.fn.executable "gcc" == 1 then
     local cmd = shell.substitute(actions.get_actions().c[compile])
     local out = vim.fn.system(shell.wrap_command(cmd))
 
-    local qf = require "code-runner.quickfix"
+    local qf = require "ignition.quickfix"
     local entries = qf.parse(vim.split(out, "\n"), dir)
 
     T.truthy(#entries >= 1, "al menos un error parseado")

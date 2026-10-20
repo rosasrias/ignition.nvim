@@ -1,4 +1,4 @@
-local runner = require "code-runner.runner"
+local runner = require "ignition.runner"
 
 T.section("runner: contrato declarativo (RUN-001)")
 
@@ -193,7 +193,7 @@ T.section("runner: conformidad del estado actual (caracterización, no migració
 -- que ejecutan vía terminal.open). Este bloque CARACTERIZA ese estado para
 -- RUN-002/004: no exige que los runners actuales cumplan el contrato nuevo.
 local function inventory()
-  local catalog = require("code-runner.actions").get_actions()
+  local catalog = require("ignition.actions").get_actions()
   local langs, fn_actions, pure_langs = 0, {}, {}
 
   for key, entry in pairs(catalog) do
@@ -225,7 +225,7 @@ T.it("hay acciones-función acopladas a ejecución (documentado, no migrado)", f
 end)
 
 T.it("java y tex resuelven por función (acoplamiento B1 vigente)", function()
-  local catalog = require("code-runner.actions").get_actions()
+  local catalog = require("ignition.actions").get_actions()
 
   local function has_fn(key)
     local entry = catalog[key]
@@ -251,7 +251,7 @@ T.it("existe un subconjunto ya declarativo (strings puros)", function()
 end)
 
 T.it("un comando string real cabe en un RunnerSpec válido", function()
-  local catalog = require("code-runner.actions").get_actions()
+  local catalog = require("ignition.actions").get_actions()
   local _, _, pure_langs = inventory()
   local key = pure_langs[1]
   local entry = catalog[key]

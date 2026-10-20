@@ -1,4 +1,4 @@
-local shell = require "code-runner.shell"
+local shell = require "ignition.shell"
 
 -- Compara rutas normalizando separadores (expand puede devolver \ en Windows
 -- aunque el fixture se construyó con /).

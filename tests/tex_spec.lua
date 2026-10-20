@@ -1,4 +1,4 @@
-local tex = require "code-runner.context.tex"
+local tex = require "ignition.context.tex"
 
 local tmpdir = vim.fn.tempname() .. "/cr_tex_test"
 vim.fn.mkdir(tmpdir, "p")
@@ -25,7 +25,7 @@ T.it("resuelve % !TEX root como el legacy", function()
   local f = write("cap.tex", { "% !TEX root = main.tex", "\\section{x}" })
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local legacy = require("code-runner.actions.latex").detect_main_tex()
+  local legacy = require("ignition.actions.latex").detect_main_tex()
   local ours = tex.main_file { current = f, lines = vim.fn.readfile(f, "", 15) }
 
   T.truthy(same_path(legacy, ours), "misma ruta salvo separadores")
@@ -36,7 +36,7 @@ T.it("paridad con espacios raros y subdirectorios", function()
   local f = write("a.tex", { "%!TEX   root=  sub/main.tex" })
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local legacy = require("code-runner.actions.latex").detect_main_tex()
+  local legacy = require("ignition.actions.latex").detect_main_tex()
   local ours = tex.main_file { current = f, lines = vim.fn.readfile(f, "", 15) }
 
   T.truthy(same_path(legacy, ours))
@@ -48,7 +48,7 @@ T.it("paridad con .. en la directiva", function()
   local f = write("ch/cap.tex", { "% !TEX root = ../main.tex" })
   vim.cmd("edit " .. vim.fn.fnameescape(f))
 
-  local legacy = require("code-runner.actions.latex").detect_main_tex()
+  local legacy = require("ignition.actions.latex").detect_main_tex()
   local ours = tex.main_file { current = f, lines = vim.fn.readfile(f, "", 15) }
 
   T.truthy(same_path(legacy, ours))

@@ -1,4 +1,4 @@
-local config = require "code-runner.config"
+local config = require "ignition.config"
 
 T.section("config")
 
@@ -8,7 +8,7 @@ T.it("los defaults están completos", function()
   T.eq(true, config.options.autosave)
   T.eq("horizontal", config.options.terminal.direction)
   T.truthy(config.options.icons.run and config.options.icons.build)
-  T.truthy(config.options.picker.title == "CodeRunner")
+  T.truthy(config.options.picker.title == "Ignition")
 end)
 
 T.it("setup hace deep merge sin perder defaults", function()

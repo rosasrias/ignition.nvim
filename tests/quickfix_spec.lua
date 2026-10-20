@@ -1,4 +1,4 @@
-local quickfix = require "code-runner.quickfix"
+local quickfix = require "ignition.quickfix"
 
 local CWD = "C:/proy/src"
 
@@ -159,7 +159,7 @@ T.it("múltiples errores en varias líneas", function()
 end)
 
 T.it("style=diagnostic redirige a vim.diagnostic y no a la quickfix", function()
-  local cfg = require "code-runner.config"
+  local cfg = require "ignition.config"
   local saved = cfg.options.quickfix.style
   cfg.options.quickfix.style = "diagnostic"
 
@@ -174,7 +174,7 @@ T.it("style=diagnostic redirige a vim.diagnostic y no a la quickfix", function()
   local count = quickfix.handle(buf, 1, "")
 
   T.eq(1, count)
-  local diags = vim.diagnostic.get(bufnr, { namespace = require("code-runner.diagnostics").ns })
+  local diags = vim.diagnostic.get(bufnr, { namespace = require("ignition.diagnostics").ns })
   T.eq(1, #diags, "cayó en vim.diagnostic")
   T.eq(1, diags[1].lnum, "base 0")
   -- sin abrir ventana ni tocarse la lista quickfix para el build fallido
@@ -184,7 +184,7 @@ T.it("style=diagnostic redirige a vim.diagnostic y no a la quickfix", function()
   T.eq(0, #qf_windows(), "no abrió la ventana quickfix")
 
   cfg.options.quickfix.style = saved
-  vim.diagnostic.reset(require("code-runner.diagnostics").ns)
+  vim.diagnostic.reset(require("ignition.diagnostics").ns)
   vim.fn.delete(src)
   pcall(vim.api.nvim_buf_delete, bufnr, { force = true })
   pcall(vim.api.nvim_buf_delete, buf, { force = true })

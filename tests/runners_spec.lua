@@ -1,14 +1,14 @@
-local runners = require "code-runner.runners"
-local registry = require "code-runner.runner_registry"
+local runners = require "ignition.runners"
+local registry = require "ignition.runner_registry"
 
 local function fresh()
   registry.reset()
 end
 
 local function real_inputs()
-  local actions = require "code-runner.actions"
-  local project = require "code-runner.project"
-  local config = require "code-runner.config"
+  local actions = require "ignition.actions"
+  local project = require "ignition.project"
+  local config = require "ignition.config"
   return actions.get_actions(), {
     markers_for = function(key)
       return project.markers_for(key)
@@ -102,7 +102,7 @@ T.it("el catálogo legacy sigue mandando la selección (separación)", function(
   local before = table.concat(catalog.go.__order, "\n")
   runners.seed(catalog, opts)
 
-  local actions = require("code-runner.actions").get_actions()
+  local actions = require("ignition.actions").get_actions()
   T.eq(before, table.concat(actions.go.__order, "\n"), "labels de presentación intactos")
   T.truthy(registry.has("go"), "registro nuevo poblado en paralelo")
 
@@ -117,8 +117,8 @@ end)
 T.section("runners/go: paridad con el catálogo (migración vertical, sin retirar)")
 
 T.it("la declaración es un RunnerSpec válido", function()
-  local runner = require "code-runner.runner"
-  local decl = require("code-runner.runners.go").spec
+  local runner = require "ignition.runner"
+  local decl = require("ignition.runners.go").spec
   local spec, err = runner.new(decl)
   T.falsy(err)
   T.truthy(spec)
@@ -127,9 +127,9 @@ T.it("la declaración es un RunnerSpec válido", function()
 end)
 
 T.it("los ids coinciden con los derivados hoy de los labels", function()
-  local task = require "code-runner.task"
-  local config = require "code-runner.config"
-  local decl = require("code-runner.runners.go").spec
+  local task = require "ignition.task"
+  local config = require "ignition.config"
+  local decl = require("ignition.runners.go").spec
   local icons = config.options.icons
 
   T.eq(task.id("go", icons.run .. " Run"), decl.tasks[1].id)
@@ -138,17 +138,17 @@ T.it("los ids coinciden con los derivados hoy de los labels", function()
 end)
 
 T.it("paridad: lo declarado sustituye idéntico a lo legacy", function()
-  local shell = require "code-runner.shell"
-  local catalog = require("code-runner.actions").get_actions()
-  local decl = require("code-runner.runners.go").spec
-  local icons = require("code-runner.config").options.icons
+  local shell = require "ignition.shell"
+  local catalog = require("ignition.actions").get_actions()
+  local decl = require("ignition.runners.go").spec
+  local icons = require("ignition.config").options.icons
 
   local vars = { ["$file"] = "/proj/main.go", ["$fileBase"] = "/proj/main" }
   local legacy_by_id = {}
   for _, label in ipairs(catalog.go.__order) do
     local cmd = catalog.go[label]
     if type(cmd) == "string" then
-      legacy_by_id[require("code-runner.task").id("go", label)] =
+      legacy_by_id[require("ignition.task").id("go", label)] =
         shell.substitute(cmd, vars, "go")
     end
   end
@@ -161,9 +161,9 @@ T.it("paridad: lo declarado sustituye idéntico a lo legacy", function()
 end)
 
 T.it("paridad: resuelve con la misma identidad por el resolver", function()
-  local runner = require "code-runner.runner"
-  local resolve = require "code-runner.resolve"
-  local decl = require("code-runner.runners.go").spec
+  local runner = require "ignition.runner"
+  local resolve = require "ignition.resolve"
+  local decl = require("ignition.runners.go").spec
 
   local spec = runner.new_or_error(decl)
   local res, err = resolve.resolve({

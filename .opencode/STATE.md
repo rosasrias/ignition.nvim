@@ -1,4 +1,4 @@
-# CodeRunner.nvim Development State
+# Ignition.nvim Development State
 
 This file is the persistent state of the current development effort.
 
@@ -34,6 +34,17 @@ puro sobre líneas (precedente `context/test.lua`), paridad semántica con
 intencional del `:p` con backslashes; 8 tests. `latex.lua` intacto y
 mandando. Suite 690/0/2. Sin cableado, sin commit.
 
+## Identidad de producto: Ignition.nvim (rename)
+
+Migración de identidad (solo nombre/rutas, sin cambio de arquitectura ni de
+comportamiento): namespace `code-runner` → `ignition`, `plugin/code-runner.lua`
+→ `plugin/ignition.lua`, comandos `:CodeRun*` → `:IgnitionRun*`, grupos de
+highlight/autocmds `CodeRunner*` → `Ignition*`, variables de buffer
+`code_runner_*` → `ignition_*`, directorio de datos `.../code-runner/` →
+`.../ignition/`, dotfile de proyecto `.code-runner.lua` → `.ignition.lua`.
+Sin alias de compatibilidad (pre-v1.0; ver DECISIONS.md ADR-019 y CHANGELOG).
+Suite tras la migración: 691 pass · 0 fail · 2 skip.
+
 ______________________________________________________________________
 
 # Completed
@@ -65,7 +76,7 @@ Persistent OpenCode documentation is being established.
 
 ## ARCH-002 completado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/task.lua` (puro, sin dependencias de
+- Nuevo módulo Core `lua/ignition/task.lua` (puro, sin dependencias de
   vim/UI). `task.id(runner, name)` produce identidad estable y determinística
   (`go.Run` → `go.run`) libre de presentación (ADR-002).
 - `task.new()` normaliza un TaskSpec canónico (defaults `filetypes = {}`,
@@ -85,7 +96,7 @@ Persistent OpenCode documentation is being established.
 
 ## ARCH-003 completado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/command.lua`: CommandSpec
+- Nuevo módulo Core `lua/ignition/command.lua`: CommandSpec
   (`{ executable, args, cwd, env }`) como representación estructurada interna
   de comandos (ADR-008 / CONTRACTS §8), aceptando strings como shorthand.
 - `parse()` normaliza `go run $file` → `executable="go" args={"run","$file"}`;
@@ -102,7 +113,7 @@ Persistent OpenCode documentation is being established.
 
 ## ARCH-004 completado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/result.lua`: Result normalizado
+- Nuevo módulo Core `lua/ignition/result.lua`: Result normalizado
   (`{ code, signal, stdout, stderr, duration }`, CONTRACTS §7), independiente
   de la terminal UI.
 - `new()` normaliza y desacopla; `validate()/valid()` checan el contrato;
@@ -116,7 +127,7 @@ Persistent OpenCode documentation is being established.
 
 ## ARCH-005 completado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/execution.lua`: entidad Execution
+- Nuevo módulo Core `lua/ignition/execution.lua`: entidad Execution
   (`{ id, task_id, context, command, status, started_at, finished_at, result }`,
   CONTRACTS §5) con identidad única y ciclo de vida explícito
   (created/starting/running/success/failed/cancelled + TRANSITIONS con
@@ -134,7 +145,7 @@ Persistent OpenCode documentation is being established.
 
 ## ARCH-006 completado (2026-09-01)
 
-- Nuevo módulo Core `lua/code-runner/task_registry.lua`: Task Registry por ID
+- Nuevo módulo Core `lua/ignition/task_registry.lua`: Task Registry por ID
   estable (CONTRACTS §16), separado del Runner Registry legacy. Identidad por
   `task.id` (no label). API register/unregister/get/list/has/count/reset,
   acepta TaskSpec o Task construido, reemplazo sin duplicar posición.
@@ -149,7 +160,7 @@ Persistent OpenCode documentation is being established.
 ## ARCH-007 completado (2026-09-01)
 
 - Auditoría de dependencias (no código): inventario de los módulos de
-  `lua/code-runner`, clasificación por capa y contraste con `BOUNDARIES.md`.
+  `lua/ignition`, clasificación por capa y contraste con `BOUNDARIES.md`.
 - Core limpio confirmado: `task`, `command`, `result`, `execution`,
   `task_registry` (ninguno depende de vim/UI/terminal/quickfix/runner).
 - Violaciones documentadas (ver sección Conflicts, B1–B4) y en
@@ -165,7 +176,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-001 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/engine.lua` (Core puro): conduce el lifecycle
+- Nuevo `lua/ignition/engine.lua` (Core puro): conduce el lifecycle
   created→starting→running→success|failed|cancelled sobre `execution.lua` y
   emite cada transición válida a un listener inyectable (`set_listener`).
 - Puente hacia EXEC-007 (execution events); sin dependencia de vim.
@@ -177,7 +188,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-002 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/process.lua` (Core puro, BOUNDARIES §7): puerto
+- Nuevo `lua/ignition/process.lua` (Core puro, BOUNDARIES §7): puerto
   inyectable `spawn/send/terminate` para el Process Adapter (CONTRACTS §19),
   con validación de shape, adapter concreto seteable vía `set_adapter`, sin
   dependencia de `vim.fn.jobstart`/`termopen`/`vim.system`.
@@ -189,7 +200,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-003 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/stream.lua` (Core puro): normaliza chunks
+- Nuevo `lua/ignition/stream.lua` (Core puro): normaliza chunks
   stdout/stderr a líneas completas en orden (pending por canal), output
   `{stdout, stderr}` listo para Result, callbacks on_line/on_stdout/on_stderr,
   stats/reset.
@@ -201,7 +212,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-004 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/cancel.lua` (Core puro): cancelación por Execution con
+- Nuevo `lua/ignition/cancel.lua` (Core puro): cancelación por Execution con
   guard de identidad (`expected`), terminate delegado (EXEC-002 port) antes de
   marcar `cancelled`, rechazo de estados terminales/obsoletos, `now`
   inyectable, emisión vía engine.
@@ -214,7 +225,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-005 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/restart.lua` (Core puro): re-ejecución como Execution
+- Nuevo `lua/ignition/restart.lua` (Core puro): re-ejecución como Execution
   nueva (id fresco, created, sin timestamps/result), heredando task_id/context/
   command; `prev` nunca se muta. `same_identity` como guard.
 - `tests/restart_spec.lua` (9 tests): identidad nueva tras success/failed/
@@ -226,7 +237,7 @@ Persistent OpenCode documentation is being established.
 
 ## EXEC-006 completado (2026-09-01)
 
-- Nuevo `lua/code-runner/result_handler.lua` (Core puro): on_exit (code/signal)
+- Nuevo `lua/ignition/result_handler.lua` (Core puro): on_exit (code/signal)
   → Result canónico (CONTRACTS §7, capture option de stream) adjuntado vía
   `engine.finish`; identity guard (`expected`), only activas finalizables.
 - `tests/result_handler_spec.lua` (11 tests): clasificación, capture, stale
@@ -239,7 +250,7 @@ Persistent OpenCode documentation is being established.
 ## EXEC-007 completado (2026-10-09)
 
 - `lifecycle_events.lua` formalizado como contrato puro EXEC-007: paridad
-  `CodeRunnerStart/Success/Failed/Cancelled + Exit`, `created/starting`
+  `IgnitionStart/Success/Failed/Cancelled + Exit`, `created/starting`
   silenciosos, payload desde Execution con `cwd` canónico (`command.cwd`
   > `ctx`/project root).
 - `engine.set_listener` valida `function|nil`; `emit` con `pcall` (listener

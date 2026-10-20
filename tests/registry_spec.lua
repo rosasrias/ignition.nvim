@@ -1,6 +1,6 @@
-local registry = require "code-runner.actions.registry"
-local actions = require "code-runner.actions"
-local cr = require "code-runner"
+local registry = require "ignition.actions.registry"
+local actions = require "ignition.actions"
+local cr = require "ignition"
 
 local function find_label(entry)
   for k in pairs(entry) do
@@ -44,7 +44,7 @@ T.it("kind build usa el icono build en el label", function()
 
   local entry = actions.get_actions()["aaa"]
   local label = find_label(entry)
-  local icons = require("code-runner.config").options.icons
+  local icons = require("ignition.config").options.icons
   T.truthy(label:find(icons.build, 1, true), "label con icono build: " .. tostring(label))
 
   registry.reset()

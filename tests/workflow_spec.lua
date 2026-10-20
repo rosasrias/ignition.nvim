@@ -1,5 +1,5 @@
-local workflow = require "code-runner.workflow"
-local shell = require "code-runner.shell"
+local workflow = require "ignition.workflow"
+local shell = require "ignition.shell"
 
 -- Blindaje: los tests con comandos reales usan la plataforma real, no el
 -- valor que otros tests hayan dejado en shell.IS_WIN.
@@ -7,7 +7,7 @@ local PLATFORM_WIN = vim.fn.has "win32" == 1
 
 local function clean()
   workflow.reset()
-  require("code-runner.projectrc").clear_cache()
+  require("ignition.projectrc").clear_cache()
 end
 
 -- Core síncrono `execute` con run_step inyectado (sin procesos reales).
@@ -271,7 +271,7 @@ else
   T.skip("parallel jobstart", "necesita una shell real (python/cmd) para el E2E")
 end
 
-T.section("workflow: dispatch desde .code-runner.lua")
+T.section("workflow: dispatch desde .ignition.lua")
 
 if vim.fn.executable "python" == 1 or PLATFORM_WIN then
   T.it("un paso exitoso reporta exit 0", function()
@@ -309,7 +309,7 @@ else
   T.skip("pasos headless", "necesita una shell real (python/cmd) para el E2E")
 end
 
-T.section("workflow: dispatch desde .code-runner.lua")
+T.section("workflow: dispatch desde .ignition.lua")
 
 T.it("una task con steps se registra en el engine (no en el picker)", function()
   clean()
@@ -321,9 +321,9 @@ T.it("una task con steps se registra en el engine (no en el picker)", function()
     "  ci = { steps = { 'go build ./...', 'go test ./...' } },",
     "  picker = { filetypes = { 'zzz' }, kind = 'run', command = 'pick %' },",
     "} }",
-  }, root .. "/.code-runner.lua")
+  }, root .. "/.ignition.lua")
 
-  T.truthy(require("code-runner.projectrc").load("go", root))
+  T.truthy(require("ignition.projectrc").load("go", root))
 
   local wf = workflow.list()
   T.truthy(wf.ci, "task con steps en el motor")
@@ -331,7 +331,7 @@ T.it("una task con steps se registra en el engine (no en el picker)", function()
   T.eq(root, wf.ci.cwd, "cwd = raíz del proyecto")
   T.falsy(wf.picker, "la tarea command NO va al motor")
 
-  local entry = require("code-runner.actions").get_actions()["zzz"]
+  local entry = require("ignition.actions").get_actions()["zzz"]
   T.truthy(entry, "la tarea command sí va al picker")
   T.falsy(entry.ci, "la task con steps no aparece en el picker")
 
@@ -343,7 +343,7 @@ T.section("workflow: ciclo de vida por el Engine (slice 6)")
 if vim.fn.executable "python" == 1 or PLATFORM_WIN then
   T.it("run() conduce cada paso por running→success del Engine", function()
     clean()
-    local engine = require "code-runner.engine"
+    local engine = require "ignition.engine"
     local ok_cmd = PLATFORM_WIN and "cmd /c exit 0" or "true"
     workflow.register({ name = "eng", steps = { ok_cmd, ok_cmd }, stop_on_fail = true })
 
@@ -373,7 +373,7 @@ if vim.fn.executable "python" == 1 or PLATFORM_WIN then
 
   T.it("dos corridas no comparten identidad de ejecución", function()
     clean()
-    local engine = require "code-runner.engine"
+    local engine = require "ignition.engine"
     local ok_cmd = PLATFORM_WIN and "cmd /c exit 0" or "true"
     workflow.register({ name = "twice", steps = { ok_cmd }, stop_on_fail = true })
 
@@ -425,7 +425,7 @@ if vim.fn.executable "python" == 1 or PLATFORM_WIN then
 
   T.it("paso con && corre como una Execution del proceso spawneado", function()
     clean()
-    local engine = require "code-runner.engine"
+    local engine = require "ignition.engine"
     local chain = PLATFORM_WIN and "cmd /c exit 0 && cmd /c exit 0" or "true && true"
     workflow.register({ name = "chain", steps = { chain }, stop_on_fail = true })
 
@@ -458,7 +458,7 @@ T.section("workflow: execute* honra el Engine (slice 9, contrato)")
 
 T.it("execute() transiciona cada paso: sin segundo ciclo de vida", function()
   clean()
-  local engine = require "code-runner.engine"
+  local engine = require "ignition.engine"
   local seen = {}
   engine.set_listener(function(exec)
     table.insert(seen, exec.status .. ":" .. exec.task_id)
@@ -483,7 +483,7 @@ end)
 
 T.it("execute() clasifica el fallo en el Engine sin cambiar el retorno", function()
   clean()
-  local engine = require "code-runner.engine"
+  local engine = require "ignition.engine"
   local seen = {}
   engine.set_listener(function(exec)
     table.insert(seen, exec.status .. ":" .. exec.task_id)
@@ -504,7 +504,7 @@ end)
 
 T.it("execute_parallel() transiciona cada paso en el Engine", function()
   clean()
-  local engine = require "code-runner.engine"
+  local engine = require "ignition.engine"
   workflow.register({ name = "pareng", steps = { "a", "b" }, parallel = true })
 
   local seen = {}

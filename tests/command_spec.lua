@@ -1,4 +1,4 @@
-local command = require "code-runner.command"
+local command = require "ignition.command"
 
 T.section("command: parse (shorthand -> CommandSpec)")
 
@@ -122,7 +122,7 @@ end)
 T.section("command: normalize_spawn (slice 7, modela lo spawneado)")
 
 T.it("comando único se modela directo", function()
-  local command = require "code-runner.command"
+  local command = require "ignition.command"
   local spec, err = command.normalize_spawn("go run .", { "go", "run", "." })
 
   T.falsy(err)
@@ -131,7 +131,7 @@ T.it("comando único se modela directo", function()
 end)
 
 T.it("chain && se modela con el argv envuelto (un proceso, una Execution)", function()
-  local command = require "code-runner.command"
+  local command = require "ignition.command"
   local spec, err = command.normalize_spawn("a && b", { "bash", "-lc", "a && b" })
 
   T.falsy(err)
@@ -140,7 +140,7 @@ T.it("chain && se modela con el argv envuelto (un proceso, una Execution)", func
 end)
 
 T.it("sin && ni parse válido no hay fallback silencioso", function()
-  local command = require "code-runner.command"
+  local command = require "ignition.command"
 
   T.falsy(command.normalize_spawn("", { "bash", "-lc", "" }))
   T.falsy(command.normalize_spawn(nil, nil))
@@ -209,7 +209,7 @@ end)
 T.section("command: acceptance — todo el catálogo es representable")
 
 T.it("cada comando string del catálogo se normaliza (o chain por &&)", function()
-  local actions = require "code-runner.actions"
+  local actions = require "ignition.actions"
   local catalog = actions.get_actions()
   local count = 0
 

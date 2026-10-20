@@ -1,6 +1,6 @@
-local projectrc = require "code-runner.projectrc"
-local registry = require "code-runner.actions.registry"
-local config = require "code-runner.config"
+local projectrc = require "ignition.projectrc"
+local registry = require "ignition.actions.registry"
+local config = require "ignition.config"
 
 local tmpdir = vim.fn.tempname() .. "/cr_projrc_test"
 vim.fn.mkdir(tmpdir, "p")
@@ -24,7 +24,7 @@ local function clean()
   projectrc.clear_cache()
 end
 
-T.section("projectrc: .code-runner.lua por proyecto")
+T.section("projectrc: .ignition.lua por proyecto")
 
 T.it("un dotfile no existe no hace nada", function()
   clean()
@@ -34,7 +34,7 @@ T.it("un dotfile no existe no hace nada", function()
   T.falsy(projectrc.load("go", root), "sin dotfile → false")
 end)
 
-T.it("carga .code-runner.lua y registra las tasks devueltas", function()
+T.it("carga .ignition.lua y registra las tasks devueltas", function()
   clean()
   local root = make_tree()
   vim.fn.writefile({ "module demo" }, root .. "/go.mod")
@@ -42,10 +42,10 @@ T.it("carga .code-runner.lua y registra las tasks devueltas", function()
     "return { tasks = {",
     "  dev = { filetypes = { 'zzz' }, kind = 'run', command = 'dev %' },",
     "} }",
-  }, root .. "/.code-runner.lua")
+  }, root .. "/.ignition.lua")
 
   T.truthy(projectrc.load("go", root), "dotfile cargada")
-  local entry = require("code-runner.actions").get_actions()["zzz"]
+  local entry = require("ignition.actions").get_actions()["zzz"]
   local label = entry and entry.__order[1] or nil
   T.truthy(entry, "task registrada en el catálogo")
 
@@ -68,10 +68,10 @@ T.it("una task con steps en el dotfile preserva parallel", function()
     "return { tasks = {",
     "  par = { steps = { 'a', 'b', 'c' }, parallel = 2 },",
     "} }",
-  }, root .. "/.code-runner.lua")
+  }, root .. "/.ignition.lua")
 
   T.truthy(projectrc.load("go", root))
-  local wf = require("code-runner.workflow").list()
+  local wf = require("ignition.workflow").list()
   T.truthy(wf.par, "task con steps en el motor")
   T.eq(2, wf.par.parallel, "parallel se preserva desde el dotfile")
 
@@ -82,7 +82,7 @@ T.it("es cacheada por raíz (no recarga ni re-registra)", function()
   clean()
   local root = make_tree()
   vim.fn.writefile({ "module demo" }, root .. "/go.mod")
-  local dot = root .. "/.code-runner.lua"
+  local dot = root .. "/.ignition.lua"
   vim.fn.writefile({ "return { tasks = { t = { filetypes = { 'zzz' }, kind = 'run', command = 'v1' } } }" }, dot)
 
   projectrc.load("go", root)
@@ -90,7 +90,7 @@ T.it("es cacheada por raíz (no recarga ni re-registra)", function()
   vim.fn.writefile({ "return { tasks = { t = { filetypes = { 'zzz' }, kind = 'run', command = 'v2' } } }" }, dot)
   projectrc.load("go", root)
 
-  local entry = require("code-runner.actions").get_actions()["zzz"]
+  local entry = require("ignition.actions").get_actions()["zzz"]
   local has_v2 = false
   for _, v in pairs(entry) do
     if v == "v2" then
@@ -106,9 +106,9 @@ T.it("un dotfile que lanza error se notifica sin propagar", function()
   clean()
   local root = make_tree()
   vim.fn.writefile({ "module demo" }, root .. "/go.mod")
-  vim.fn.writefile({ "error('boom')" }, root .. "/.code-runner.lua")
+  vim.fn.writefile({ "error('boom')" }, root .. "/.ignition.lua")
 
-  local terminal = require "code-runner.terminal"
+  local terminal = require "ignition.terminal"
   local orig = terminal.notify
   local notified = {}
   terminal.notify = function(msg, level)
@@ -121,7 +121,7 @@ T.it("un dotfile que lanza error se notifica sin propagar", function()
 
   T.truthy(ok, "no propaga el error")
   T.eq(1, #notified, "notifica un error")
-  T.truthy(notified[1].msg:find(".code%-runner.lua"), "mensaje menciona el dotfile")
+  T.truthy(notified[1].msg:find(".ignition.lua", 1, true), "mensaje menciona el dotfile")
 
   clean()
 end)
@@ -133,7 +133,7 @@ T.it("projectrc deshabilitado no carga nada", function()
 
   local root = make_tree()
   vim.fn.writefile({ "module demo" }, root .. "/go.mod")
-  vim.fn.writefile({ "return { tasks = {} }" }, root .. "/.code-runner.lua")
+  vim.fn.writefile({ "return { tasks = {} }" }, root .. "/.ignition.lua")
 
   T.falsy(projectrc.load("go", root), "deshabilitado → false")
 

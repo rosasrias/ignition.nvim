@@ -1,6 +1,6 @@
-local result_handler = require "code-runner.result_handler"
-local result = require "code-runner.result"
-local engine = require "code-runner.engine"
+local result_handler = require "ignition.result_handler"
+local result = require "ignition.result"
+local engine = require "ignition.engine"
 
 local function running_exec()
   local e = engine.create { task_id = "Run", command = "go run .", now = 1000 }

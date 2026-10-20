@@ -1,7 +1,7 @@
-local profiles = require "code-runner.actions.profiles"
-local actions = require "code-runner.actions"
-local config = require "code-runner.config"
-local shell = require "code-runner.shell"
+local profiles = require "ignition.actions.profiles"
+local actions = require "ignition.actions"
+local config = require "ignition.config"
+local shell = require "ignition.shell"
 
 local env = {
   RUN = config.options.icons.run,

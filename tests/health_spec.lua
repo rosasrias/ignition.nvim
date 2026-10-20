@@ -1,4 +1,4 @@
-local health = require "code-runner.health"
+local health = require "ignition.health"
 
 T.section("health: derivación de herramientas del catálogo")
 
@@ -34,7 +34,7 @@ end)
 
 T.it("used_keys une el buffer actual y el historial", function()
   -- mocks: buffer sin key (headless) e historial con "go" y "rust"
-  local history = require "code-runner.history"
+  local history = require "ignition.history"
   local orig_add, orig_clear = history.add, history.clear
   history.clear()
   history.add("go test", vim.fn.getcwd(), "go")

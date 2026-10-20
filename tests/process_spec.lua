@@ -1,4 +1,4 @@
-local process = require "code-runner.process"
+local process = require "ignition.process"
 
 local function mock_adapter()
   local calls = {}

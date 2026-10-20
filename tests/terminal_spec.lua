@@ -1,5 +1,5 @@
-local terminal = require "code-runner.terminal"
-local config = require "code-runner.config"
+local terminal = require "ignition.terminal"
+local config = require "ignition.config"
 
 local function clean_windows()
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -50,7 +50,7 @@ T.it("los defaults mantienen la terminal abierta con título propio", function()
 end)
 
 T.it("el buffer del plugin tiene nombre propio (para reutilizarlo)", function()
-  T.eq("code-runner", terminal.BUF_NAME)
+  T.eq("ignition", terminal.BUF_NAME)
 end)
 
 T.section("terminal: creación de ventanas")
@@ -153,10 +153,10 @@ T.it("la ventana float recibe el título en su borde", function()
     border = "rounded",
   })
 
-  terminal._apply_window_label(buf, "⚡ CodeRunner · Terminal · Build")
+  terminal._apply_window_label(buf, "⚡ Ignition · Terminal · Build")
 
   local title = vim.api.nvim_win_get_config(win).title
-  T.truthy(vim.inspect(title):find("CodeRunner · Terminal · Build", 1, true), "el título del float está presente")
+  T.truthy(vim.inspect(title):find("Ignition · Terminal · Build", 1, true), "el título del float está presente")
 
   clean_windows()
 end)
@@ -168,7 +168,7 @@ T.it("los splits muestran la terminal en su winbar", function()
   vim.cmd "split"
   vim.api.nvim_win_set_buf(0, buf)
 
-  terminal._apply_window_label(buf, "⚡ CodeRunner · Terminal · Run")
+  terminal._apply_window_label(buf, "⚡ Ignition · Terminal · Run")
 
   local wb = vim.wo[0].winbar or ""
   T.truthy(wb:find("Terminal", 1, true), "winbar contiene el título")
@@ -220,26 +220,26 @@ T.it("_label_parts colorea con los grupos propios del plugin", function()
   local parts = terminal._label_parts(icons.run .. " Run")
 
   T.eq(config.options.terminal.title, parts[1][1])
-  T.eq("CodeRunnerTermTitle", parts[1][2])
+  T.eq("IgnitionTermTitle", parts[1][2])
   T.eq(icons.run .. " Run", parts[3][1])
-  T.eq("CodeRunnerActionRun", parts[3][2], "acción run con el grupo del plugin")
+  T.eq("IgnitionActionRun", parts[3][2], "acción run con el grupo del plugin")
 end)
 
 T.section("terminal: grupos de resaltado expuestos (base46)")
 
 T.it("los grupos propios existen después de setup y no pisan overrides", function()
-  require "code-runner.highlight".setup()
+  require "ignition.highlight".setup()
 
   local link = "ExGreen"
   config.options.picker.hl_run = link
 
-  for _, name in ipairs(require("code-runner.highlight").names) do
+  for _, name in ipairs(require("ignition.highlight").names) do
     local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name })
     T.truthy(ok and hl, "grupo " .. name .. " definido")
   end
 
   -- idempotente: definirlo de nuevo no rompe nada
-  require "code-runner.highlight".setup()
+  require "ignition.highlight".setup()
   T.truthy(true)
 end)
 
@@ -284,33 +284,33 @@ end)
 
 T.section("terminal: cleanup de temporales al terminar")
 
-T.it("_on_exit borra las rutas registradas en code_runner_cleanup", function()
-  local state = require "code-runner.state"
+T.it("_on_exit borra las rutas registradas en ignition_cleanup", function()
+  local state = require "ignition.state"
   local temp = vim.fn.tempname() .. "/cr_cleanup"
   vim.fn.mkdir(temp, "p")
   vim.fn.writefile({ "x" }, temp .. "/App.class")
 
   local term_buf = with_term_window()
-  vim.b[term_buf].code_runner_cleanup = { temp }
+  vim.b[term_buf].ignition_cleanup = { temp }
 
   state.set("running", { buf = term_buf })
   local rid = state.get().run_id
   terminal._on_exit(term_buf, 0, "", rid)
 
   T.eq(0, vim.fn.isdirectory(temp), "el directorio temporal fue borrado")
-  T.eq(nil, vim.b[term_buf] and vim.b[term_buf].code_runner_cleanup, "se limpia el registro")
+  T.eq(nil, vim.b[term_buf] and vim.b[term_buf].ignition_cleanup, "se limpia el registro")
 
   state.reset()
   clean_windows()
 end)
 
 T.it("_on_exit también limpia cuando el job falla (código != 0)", function()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   local temp = vim.fn.tempname() .. "/cr_cleanup_err"
   vim.fn.mkdir(temp, "p")
 
   local term_buf = with_term_window()
-  vim.b[term_buf].code_runner_cleanup = { temp }
+  vim.b[term_buf].ignition_cleanup = { temp }
 
   state.set("running", { buf = term_buf })
   local rid = state.get().run_id
@@ -330,7 +330,7 @@ T.it("_open_window aplica winhighlight del titulo a la terminal", function()
 
   local win = vim.api.nvim_get_current_win()
   local winhl = vim.wo[win].winhighlight
-  T.truthy(winhl:find("CodeRunnerTermBg", 1, true), "usa el fondo del titulo")
+  T.truthy(winhl:find("IgnitionTermBg", 1, true), "usa el fondo del titulo")
 
   clean_windows()
 end)
@@ -352,7 +352,7 @@ end)
     vim.g.base46_cache = cache
     terminal._open_window "horizontal"
 
-    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "CodeRunnerTermBg" })
+    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "IgnitionTermBg" })
     T.truthy(ok and bg_hl.bg, "fondo aplicado sin NvimTree abierto")
     T.eq(nil, bg_hl.fg, "sin fg: el texto no se toca")
 
@@ -366,7 +366,7 @@ end)
     terminal._open_window "horizontal"
 
     local _, src_hl = pcall(vim.api.nvim_get_hl, 0, { name = "NvimTreeNormal", link = true })
-    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "CodeRunnerTermBg" })
+    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "IgnitionTermBg" })
     T.truthy(ok and bg_hl.bg, "grupo de fondo definido")
     T.eq(src_hl.bg, bg_hl.bg, "bg igual al de NvimTree")
     T.eq(nil, bg_hl.fg, "sin fg: el texto no se toca")
@@ -383,7 +383,7 @@ end)
 
     terminal._open_window "horizontal"
 
-    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "CodeRunnerTermBg" })
+    local ok, bg_hl = pcall(vim.api.nvim_get_hl, 0, { name = "IgnitionTermBg" })
 
     -- Restaurar el stub antes de asertar (un assert fallido aborta el test).
     package.loaded["nvconfig"] = prev
@@ -396,12 +396,12 @@ end)
   end)
 
   T.it("exitmsg azul en exito y rojo en error, reemplaza el del core", function()
-    local tbuffer = require "code-runner.terminal.buffer"
+    local tbuffer = require "ignition.terminal.buffer"
     local buf = vim.api.nvim_create_buf(false, true)
     vim.b[buf][tbuffer.PLUGIN_MARK] = true
 
     local core_ns = vim.api.nvim_create_namespace "nvim.terminal.exitmsg"
-    local our_ns = vim.api.nvim_create_namespace "code-runner.exitmsg"
+    local our_ns = vim.api.nvim_create_namespace "ignition.exitmsg"
     vim.api.nvim_buf_set_extmark(buf, core_ns, 0, 0, {
       virt_text = { { "[Process exited 0]", nil } },
       virt_text_pos = "overlay",
@@ -413,12 +413,12 @@ end)
     local ours = vim.api.nvim_buf_get_extmarks(buf, our_ns, 0, -1, { details = true })
     T.eq(1, #ours, "pone el propio")
     T.eq("[Process exited 0]", ours[1][4].virt_text[1][1])
-    T.eq("CodeRunnerExitOk", ours[1][4].virt_text[1][2], "azul en exito")
+    T.eq("IgnitionExitOk", ours[1][4].virt_text[1][2], "azul en exito")
 
     terminal._apply_exitmsg(buf, 1, 0)
     ours = vim.api.nvim_buf_get_extmarks(buf, our_ns, 0, -1, { details = true })
     T.eq("[Process exited 1]", ours[1][4].virt_text[1][1])
-    T.eq("CodeRunnerExitErr", ours[1][4].virt_text[1][2], "rojo en error")
+    T.eq("IgnitionExitErr", ours[1][4].virt_text[1][2], "rojo en error")
 
     pcall(vim.api.nvim_buf_delete, buf, { force = true })
   end)
@@ -441,7 +441,7 @@ T.section("terminal: tracking Engine sobre el job real (EXEC-009 slice 1)")
 local function clean_runner_buffers()
   vim.cmd "only"
   for _, b in ipairs(vim.api.nvim_list_bufs()) do
-    if terminal._has_marker(b) or vim.api.nvim_buf_get_name(b):find("code%-runner", 1) then
+    if terminal._has_marker(b) or vim.api.nvim_buf_get_name(b):find("ignition", 1) then
       pcall(vim.api.nvim_buf_delete, b, { force = true })
     end
   end
@@ -449,7 +449,7 @@ end
 
 T.it("open() registra una Execution running con task_id estable", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   state.reset()
 
   terminal.open("echo 'exec tracking'", "horizontal", nil, "Run")
@@ -468,8 +468,8 @@ end)
 
 T.it("_on_exit con exec_id obsoleto no toca la Execution nueva", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local quickfix = require "code-runner.quickfix"
+  local state = require "ignition.state"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
   state.reset()
@@ -493,8 +493,8 @@ end)
 
 T.it("_on_exit con exec_id correcto finaliza y expone eventos", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local quickfix = require "code-runner.quickfix"
+  local state = require "ignition.state"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
   state.reset()
@@ -515,7 +515,7 @@ T.it("_on_exit con exec_id correcto finaliza y expone eventos", function()
   for _, e in ipairs(terminal.last_events()) do
     evnames[#evnames + 1] = e.name
   end
-  T.eq({ "CodeRunnerSuccess", "CodeRunnerExit" }, evnames)
+  T.eq({ "IgnitionSuccess", "IgnitionExit" }, evnames)
 
   quickfix.handle = orig
   terminal._close_current(vim.api.nvim_get_current_buf())
@@ -536,15 +536,15 @@ end
 
 T.it("_on_exit trackeado emite Success+Exit una sola vez", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local quickfix = require "code-runner.quickfix"
+  local state = require "ignition.state"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
   state.reset()
 
   local seen = {}
-  listen_count_4("CodeRunnerSuccess", seen)
-  listen_count_4("CodeRunnerExit", seen)
+  listen_count_4("IgnitionSuccess", seen)
+  listen_count_4("IgnitionExit", seen)
 
   terminal.open("echo 'slice4'", "horizontal", nil, "Run")
   local current = terminal.get_execution()
@@ -558,9 +558,9 @@ T.it("_on_exit trackeado emite Success+Exit una sola vez", function()
 
   local success, exit = 0, 0
   for _, p in ipairs(seen) do
-    if p == "CodeRunnerSuccess" then
+    if p == "IgnitionSuccess" then
       success = success + 1
-    elseif p == "CodeRunnerExit" then
+    elseif p == "IgnitionExit" then
       exit = exit + 1
     end
   end
@@ -575,12 +575,12 @@ end)
 
 T.it("_close_current emite Cancelled+Exit una sola vez", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   state.reset()
 
   local seen = {}
-  listen_count_4("CodeRunnerCancelled", seen)
-  listen_count_4("CodeRunnerExit", seen)
+  listen_count_4("IgnitionCancelled", seen)
+  listen_count_4("IgnitionExit", seen)
 
   terminal.open("echo 'cerrar'", "horizontal", nil, "Run")
   T.eq("running", state.get().status)
@@ -591,9 +591,9 @@ T.it("_close_current emite Cancelled+Exit una sola vez", function()
 
   local cancelled, exit = 0, 0
   for _, p in ipairs(seen) do
-    if p == "CodeRunnerCancelled" then
+    if p == "IgnitionCancelled" then
       cancelled = cancelled + 1
-    elseif p == "CodeRunnerExit" then
+    elseif p == "IgnitionExit" then
       exit = exit + 1
     end
   end
@@ -606,8 +606,8 @@ end)
 
 T.it("quickfix sigue consumiendo el exit en el path trackeado", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local quickfix = require "code-runner.quickfix"
+  local state = require "ignition.state"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   local calls = {}
   quickfix.handle = function(buf, code, cwd)
@@ -645,8 +645,8 @@ end
 
 T.it("el Engine transiciona antes de publicarse Start", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local engine = require "code-runner.engine"
+  local state = require "ignition.state"
+  local engine = require "ignition.engine"
   state.reset()
 
   local order = {}
@@ -655,11 +655,11 @@ T.it("el Engine transiciona antes de publicarse Start", function()
       order[#order + 1] = "engine:running"
     end
   end)
-  listen_8("CodeRunnerStart", {})
+  listen_8("IgnitionStart", {})
 
   -- el Start se publica solo si el Engine ya está en running
   vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerStart",
+    pattern = "IgnitionStart",
     callback = function()
       local exec = terminal.get_execution()
       order[#order + 1] = (exec and exec.status == "running") and "emit:Start" or "emit:STALE"
@@ -678,20 +678,20 @@ end)
 
 T.it("open emite Start una sola vez con payload del Engine", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   state.reset()
 
   local seen = {}
-  listen_8("CodeRunnerStart", seen)
-  listen_8("CodeRunnerExit", seen)
+  listen_8("IgnitionStart", seen)
+  listen_8("IgnitionExit", seen)
 
   terminal.open("echo 'uno'", "horizontal", nil, "Run")
 
   local starts, exits = {}, {}
   for _, e in ipairs(seen) do
-    if e.pattern == "CodeRunnerStart" then
+    if e.pattern == "IgnitionStart" then
       starts[#starts + 1] = e
-    elseif e.pattern == "CodeRunnerExit" then
+    elseif e.pattern == "IgnitionExit" then
       exits[#exits + 1] = e
     end
   end
@@ -709,7 +709,7 @@ end)
 
 T.it("run_id legacy e id de Execution no son intercambiables", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
+  local state = require "ignition.state"
   state.reset()
 
   terminal.open("echo 'a'", "horizontal", nil, "Run")
@@ -729,14 +729,14 @@ end)
 
 T.it("rama legacy sin tracking emite como antes e identificada", function()
   clean_runner_buffers()
-  local state = require "code-runner.state"
-  local quickfix = require "code-runner.quickfix"
+  local state = require "ignition.state"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
   state.reset()
 
   local seen = {}
-  listen_8("CodeRunnerStart", seen)
+  listen_8("IgnitionStart", seen)
 
   terminal.open("", "horizontal")
 

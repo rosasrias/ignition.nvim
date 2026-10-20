@@ -1,6 +1,6 @@
-local task = require "code-runner.task"
-local actions = require "code-runner.actions"
-local config = require "code-runner.config"
+local task = require "ignition.task"
+local actions = require "ignition.actions"
+local config = require "ignition.config"
 
 local ICONS = config.options.icons
 

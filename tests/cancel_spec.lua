@@ -1,5 +1,5 @@
-local cancel = require "code-runner.cancel"
-local engine = require "code-runner.engine"
+local cancel = require "ignition.cancel"
+local engine = require "ignition.engine"
 
 local function running_exec(id_hint, now)
   local e = engine.create {
@@ -77,7 +77,7 @@ T.it("errores de terminate NO marcan cancelled (proceso sigue vivo)", function()
 end)
 
 T.it("acceptance: la cancelación pasa por el port (EXEC-002) sin UI", function()
-  local process = require "code-runner.process"
+  local process = require "ignition.process"
   local e = running_exec()
 
   local terminated = false

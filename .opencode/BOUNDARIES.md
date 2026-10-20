@@ -1,4 +1,4 @@
-# CodeRunner.nvim Dependency Boundaries
+# Ignition.nvim Dependency Boundaries
 
 This document defines which modules may depend on which architectural areas.
 

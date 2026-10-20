@@ -1,5 +1,5 @@
-local state = require "code-runner.state"
-local terminal = require "code-runner.terminal"
+local state = require "ignition.state"
+local terminal = require "ignition.terminal"
 
 local function open_file(name, lines)
   local dir = vim.fn.tempname() .. "/cr_state_test"
@@ -66,7 +66,7 @@ T.it("un status inválido es un no-op", function()
 end)
 
 T.it("set con emit=false espeja sin autocmds (EXEC-009 slice 4)", function()
-  local events = require "code-runner.events"
+  local events = require "ignition.events"
   local orig_emit = events.emit
   local calls = {}
   events.emit = function(status, s)
@@ -92,8 +92,8 @@ end)
 
 T.section("state: API pública")
 
-T.it("require('code-runner').state() refleja el estado central", function()
-  local init = require "code-runner"
+T.it("require('ignition').state() refleja el estado central", function()
+  local init = require "ignition"
   T.eq("function", type(init.state))
   local s = init.state()
   T.truthy(s.status)
@@ -156,7 +156,7 @@ end)
 T.it("_on_exit registra success cuando el job era el actual (run_id igual)", function()
   state.set("running", { cwd = "/tmp" })
   local rid = state.get().run_id
-  local quickfix = require "code-runner.quickfix"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
 
@@ -175,7 +175,7 @@ T.it("_on_exit ignora un job viejo (run_id distinto) y no pisa el running actual
   state.set("running", { cwd = "/tmp/b" }) -- nuevo job reemplaza al anterior
   T.truthy(state.get().run_id > old_rid)
 
-  local quickfix = require "code-runner.quickfix"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
 
@@ -190,7 +190,7 @@ end)
 T.it("_on_exit no pisa un estado ya cancelado por el usuario", function()
   state.set("cancelled")
   local rid = state.get().run_id
-  local quickfix = require "code-runner.quickfix"
+  local quickfix = require "ignition.quickfix"
   local orig = quickfix.handle
   quickfix.handle = function() return 0 end
 

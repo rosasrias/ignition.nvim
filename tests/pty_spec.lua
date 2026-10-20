@@ -1,6 +1,6 @@
-local process = require "code-runner.process"
-local pty = require "code-runner.terminal.pty"
-local shell = require "code-runner.shell"
+local process = require "ignition.process"
+local pty = require "ignition.terminal.pty"
+local shell = require "ignition.shell"
 
 local function scratch_buf()
   local buf = vim.api.nvim_create_buf(false, true)

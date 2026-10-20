@@ -1,5 +1,5 @@
-local execution = require "code-runner.execution"
-local state = require "code-runner.state"
+local execution = require "ignition.execution"
+local state = require "ignition.state"
 
 local function fresh_spec(now, overrides)
   overrides = overrides or {}

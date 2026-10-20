@@ -1,4 +1,4 @@
-local registry = require "code-runner.runner_registry"
+local registry = require "ignition.runner_registry"
 
 local function fresh()
   registry.reset()

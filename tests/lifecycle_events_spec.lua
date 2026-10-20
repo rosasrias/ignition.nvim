@@ -1,5 +1,5 @@
-local lifecycle = require "code-runner.lifecycle_events"
-local engine = require "code-runner.engine"
+local lifecycle = require "ignition.lifecycle_events"
+local engine = require "ignition.engine"
 
 local function build(status, context)
   local e = engine.create {
@@ -24,23 +24,23 @@ end
 
 T.section("lifecycle_events: nombres por estado (EXEC-007)")
 
-T.it("running emite CodeRunnerStart (paridad)", function()
-  T.eq(lifecycle.event_for "running", "CodeRunnerStart")
-  T.eq(lifecycle.names "running", { "CodeRunnerStart" })
+T.it("running emite IgnitionStart (paridad)", function()
+  T.eq(lifecycle.event_for "running", "IgnitionStart")
+  T.eq(lifecycle.names "running", { "IgnitionStart" })
 end)
 
-T.it("success emite CodeRunnerSuccess y CodeRunnerExit en ese orden", function()
-  T.eq(lifecycle.names "success", { "CodeRunnerSuccess", "CodeRunnerExit" })
+T.it("success emite IgnitionSuccess y IgnitionExit en ese orden", function()
+  T.eq(lifecycle.names "success", { "IgnitionSuccess", "IgnitionExit" })
   T.truthy(lifecycle.exits "success")
 end)
 
-T.it("failed emite CodeRunnerFailed y CodeRunnerExit", function()
-  T.eq(lifecycle.names "failed", { "CodeRunnerFailed", "CodeRunnerExit" })
+T.it("failed emite IgnitionFailed y IgnitionExit", function()
+  T.eq(lifecycle.names "failed", { "IgnitionFailed", "IgnitionExit" })
   T.truthy(lifecycle.exits "failed")
 end)
 
-T.it("cancelled emite CodeRunnerCancelled y CodeRunnerExit", function()
-  T.eq(lifecycle.names "cancelled", { "CodeRunnerCancelled", "CodeRunnerExit" })
+T.it("cancelled emite IgnitionCancelled y IgnitionExit", function()
+  T.eq(lifecycle.names "cancelled", { "IgnitionCancelled", "IgnitionExit" })
   T.truthy(lifecycle.exits "cancelled")
 end)
 
@@ -109,7 +109,7 @@ T.it("acceptance: el listener del engine y el mapeo producin la secuencia public
   exec = engine.finish(exec, { code = 0 }, 1005)
   engine.set_listener(nil)
 
-  T.eq(events_seen, { "CodeRunnerStart", "CodeRunnerSuccess", "CodeRunnerExit" })
+  T.eq(events_seen, { "IgnitionStart", "IgnitionSuccess", "IgnitionExit" })
 end)
 
 T.it("acceptance: fallo emite Start, Failed y Exit en orden", function()
@@ -126,7 +126,7 @@ T.it("acceptance: fallo emite Start, Failed y Exit en orden", function()
   exec = engine.finish(exec, { code = 1 }, 1005)
   engine.set_listener(nil)
 
-  T.eq(events_seen, { "CodeRunnerStart", "CodeRunnerFailed", "CodeRunnerExit" })
+  T.eq(events_seen, { "IgnitionStart", "IgnitionFailed", "IgnitionExit" })
 end)
 
 T.it("el módulo es Core puro (sin vim)", function()

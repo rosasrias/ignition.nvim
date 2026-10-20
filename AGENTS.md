@@ -1,4 +1,4 @@
-# AGENTS.md — reglas para agentes que trabajan en code-runner.nvim
+# AGENTS.md — reglas para agentes que trabajan en Ignition.nvim
 
 - **Leer `.opencode/README.md` antes de trabajar** (y ROADMAP/ARCHITECTURE/
   CHANGELOG/TODO cuando aplique). Es el contexto persistente del proyecto.
@@ -17,4 +17,4 @@
   responsabilidad (`actions/`, `context/`, `terminal/`...), no por decoración.
 - No agregar lenguajes al catálogo sin demanda real, mantenibilidad y tests.
 - No introducir MCPs/agentes externos/servidores infra innecesaria.
-- No convertir esto en Overseer: sigue siendo un code-runner zero-config.
+- No convertir esto en Overseer: sigue siendo un runner de código zero-config.

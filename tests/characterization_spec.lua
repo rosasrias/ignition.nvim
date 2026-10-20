@@ -7,18 +7,18 @@
 -- seguir pasando.
 
 local T = _G.T
-local actions = require("code-runner.actions")
-local state = require("code-runner.state")
-local context = require("code-runner.context")
-local history = require("code-runner.history")
-local last = require("code-runner.last")
-local shell = require("code-runner.shell")
-local project = require("code-runner.project")
-local config = require("code-runner.config")
-local events = require("code-runner.events")
-local workflow = require("code-runner.workflow")
-local picker = require("code-runner.picker")
-local init = require("code-runner.init")
+local actions = require("ignition.actions")
+local state = require("ignition.state")
+local context = require("ignition.context")
+local history = require("ignition.history")
+local last = require("ignition.last")
+local shell = require("ignition.shell")
+local project = require("ignition.project")
+local config = require("ignition.config")
+local events = require("ignition.events")
+local workflow = require("ignition.workflow")
+local picker = require("ignition.picker")
+local init = require("ignition.init")
 
 -- ============================================================
 -- Helpers
@@ -437,12 +437,12 @@ end)
 
 T.section("characterization: event emission order")
 
-T.it("running emits CodeRunnerStart with state data", function()
+T.it("running emits IgnitionStart with state data", function()
   state.reset()
   local received = {}
 
   local id = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerStart",
+    pattern = "IgnitionStart",
     callback = function(args)
       table.insert(received, args.data)
     end,
@@ -456,19 +456,19 @@ T.it("running emits CodeRunnerStart with state data", function()
   T.eq("/tmp", received[1].cwd)
 end)
 
-T.it("success emits CodeRunnerSuccess then CodeRunnerExit", function()
+T.it("success emits IgnitionSuccess then IgnitionExit", function()
   state.reset()
   local order = {}
 
   local id1 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerSuccess",
+    pattern = "IgnitionSuccess",
     callback = function()
       table.insert(order, "success")
     end,
   })
 
   local id2 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerExit",
+    pattern = "IgnitionExit",
     callback = function()
       table.insert(order, "exit")
     end,
@@ -485,19 +485,19 @@ T.it("success emits CodeRunnerSuccess then CodeRunnerExit", function()
   T.eq("exit", order[2], "Exit debería emitirse después")
 end)
 
-T.it("failed emits CodeRunnerFailed then CodeRunnerExit", function()
+T.it("failed emits IgnitionFailed then IgnitionExit", function()
   state.reset()
   local order = {}
 
   local id1 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerFailed",
+    pattern = "IgnitionFailed",
     callback = function()
       table.insert(order, "failed")
     end,
   })
 
   local id2 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerExit",
+    pattern = "IgnitionExit",
     callback = function()
       table.insert(order, "exit")
     end,
@@ -514,19 +514,19 @@ T.it("failed emits CodeRunnerFailed then CodeRunnerExit", function()
   T.eq("exit", order[2])
 end)
 
-T.it("cancelled emits CodeRunnerCancelled then CodeRunnerExit", function()
+T.it("cancelled emits IgnitionCancelled then IgnitionExit", function()
   state.reset()
   local order = {}
 
   local id1 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerCancelled",
+    pattern = "IgnitionCancelled",
     callback = function()
       table.insert(order, "cancelled")
     end,
   })
 
   local id2 = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerExit",
+    pattern = "IgnitionExit",
     callback = function()
       table.insert(order, "exit")
     end,
@@ -550,7 +550,7 @@ T.it("events.enabled=false suppresses all emissions", function()
   config.options.events.enabled = false
 
   local id = vim.api.nvim_create_autocmd("User", {
-    pattern = "CodeRunnerStart",
+    pattern = "IgnitionStart",
     callback = function()
       count = count + 1
     end,
@@ -568,7 +568,7 @@ T.it("idle state does not emit events", function()
   local count = 0
 
   local id = vim.api.nvim_create_autocmd("User", {
-    pattern = { "CodeRunnerStart", "CodeRunnerSuccess", "CodeRunnerFailed", "CodeRunnerCancelled", "CodeRunnerExit" },
+    pattern = { "IgnitionStart", "IgnitionSuccess", "IgnitionFailed", "IgnitionCancelled", "IgnitionExit" },
     callback = function()
       count = count + 1
     end,
@@ -940,7 +940,7 @@ T.it("register_action and unregister_action roundtrip", function()
 end)
 
 T.it("list_registered_actions returns empty table initially", function()
-  require("code-runner.actions.registry").reset()
+  require("ignition.actions.registry").reset()
   local list = init.list_registered_actions()
   T.eq(0, vim.tbl_count(list))
 end)

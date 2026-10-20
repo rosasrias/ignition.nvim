@@ -1,4 +1,4 @@
-# CodeRunner.nvim Architectural Decisions
+# Ignition.nvim Architectural Decisions
 
 This document contains accepted architectural decisions.
 
@@ -14,7 +14,7 @@ Status: Accepted
 
 ## Decision
 
-CodeRunner.nvim will model executable user actions as Tasks.
+Ignition.nvim will model executable user actions as Tasks.
 
 The old `action → command` representation is considered an implementation legacy.
 
@@ -210,7 +210,7 @@ Status: Accepted
 
 ## Decision
 
-`.code-runner.lua` is treated as executable project configuration.
+`.ignition.lua` is treated as executable project configuration.
 
 ## Reason
 
@@ -359,3 +359,41 @@ modeled as explicit variant tasks, not hidden runtime branching.
 Tool/OS guards already exist scattered in closures (md, html, ps1, bat).
 Centralizing them as data keeps RunnerSpec declarative, makes the policy
 testable without processes, and forces each fallback to be visible.
+
+______________________________________________________________________
+
+# ADR-019 — Product identity is Ignition.nvim
+
+Status: Accepted
+
+## Decision
+
+The plugin's product identity is **Ignition.nvim**. The former working name
+`CodeRunner` / `code-runner` is retired as a public identifier. Concretely:
+
+- Lua module namespace: `code-runner` → `ignition` (`require("ignition")`).
+- Plugin entry file: `plugin/code-runner.lua` → `plugin/ignition.lua`,
+  loaded guard `vim.g.loaded_code_runner` → `vim.g.loaded_ignition`.
+- User commands: `:CodeRun*` → `:IgnitionRun*` (`:IgnitionRun`,
+  `:IgnitionRunLast`, `:IgnitionRunHistory`, `:IgnitionRunStop`,
+  `:IgnitionRunRestart`, `:IgnitionRunTask`).
+- Highlight groups `CodeRunner*` → `Ignition*`; autocmds `CodeRunner*` →
+  `Ignition*`; buffer variables `code_runner_*` → `ignition_*`; augroup and
+  namespaces renamed; data directory `stdlib("data")/code-runner/` →
+  `.../ignition/`; diagnostics source `"code-runner"` → `"ignition"`.
+- Project config dotfile `.code-runner.lua` → `.ignition.lua`.
+
+No compatibility aliases are kept.
+
+## Reason
+
+The project is pre-v1.0 and explicitly documented as having no external users
+whose configuration must be preserved (`README.md`, "Development Status").
+The prior name was a placeholder that described the mechanism, not the
+product; carrying dual identifiers would add surface area and ambiguity for
+no user benefit. A clean, single identity keeps the public surface small and
+the architecture coherent, consistent with ADR-011 (no big-bang rewrite of
+behavior — only identity/paths change) and ADR-014 (docs move with the code).
+
+Architecture, contracts, dependency direction, and async/execution semantics
+are unchanged by this decision. It is a pure rename plus documentation parity.

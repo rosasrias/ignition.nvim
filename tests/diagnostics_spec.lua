@@ -1,4 +1,4 @@
-local diagnostics = require "code-runner.diagnostics"
+local diagnostics = require "ignition.diagnostics"
 
 local CWD = "C:/proy"
 
@@ -19,7 +19,7 @@ T.it("convierte una entrada de quickfix a la forma de vim.diagnostic", function(
   T.eq(4, d.col, "base 0")
   T.eq(5, d.end_col, "subraya el token")
   T.eq(vim.diagnostic.severity.ERROR, d.severity)
-  T.eq("code-runner", d.source)
+  T.eq("ignition", d.source)
 end)
 
 T.it("warning usa severidad WARN", function()
@@ -44,7 +44,7 @@ T.it("handle asigna diagnostics por buffer y los limpia en éxit", function()
   diagnostics.handle(entries, 1)
   local list = read_diag(bufnr)
   T.eq(2, #list)
-  T.eq("code-runner", list[1].source)
+  T.eq("ignition", list[1].source)
 
   -- código 0 (éxito) limpia todos los diagnostics del namespace
   diagnostics.handle({}, 0)

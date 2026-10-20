@@ -1,8 +1,8 @@
-# CodeRunner.nvim — OpenCode Development Context
+# Ignition.nvim — OpenCode Development Context
 
 ## Purpose
 
-This directory contains the persistent engineering context for CodeRunner.nvim.
+This directory contains the persistent engineering context for Ignition.nvim.
 
 The goal is to make development reproducible across OpenCode sessions and prevent architectural drift.
 
@@ -10,9 +10,9 @@ An AI agent working on this repository MUST treat the documents in this director
 
 ---
 
-## What is CodeRunner.nvim?
+## What is Ignition.nvim?
 
-CodeRunner.nvim is a Neovim plugin for running code and development tasks with a **zero-config-first** experience.
+Ignition.nvim is a Neovim plugin for running code and development tasks with a **zero-config-first** experience.
 
 The intended user experience is:
 
@@ -21,9 +21,9 @@ Install plugin
     ↓
 Open a source file
     ↓
-Run CodeRunner
+Run Ignition
     ↓
-CodeRunner understands the context
+Ignition understands the context
     ↓
 Useful tasks are immediately available
 ```
@@ -413,7 +413,7 @@ A change is complete when:
 
 # Mental Model
 
-Think of CodeRunner.nvim as a small operating system for development tasks.
+Think of Ignition.nvim as a small operating system for development tasks.
 
 ```text
 Context

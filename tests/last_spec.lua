@@ -1,5 +1,5 @@
-local last = require "code-runner.last"
-local config = require "code-runner.config"
+local last = require "ignition.last"
+local config = require "ignition.config"
 
 local tmpfile = os.tmpname()
 last._data_file = tmpfile

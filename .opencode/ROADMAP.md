@@ -1,4 +1,4 @@
-# CodeRunner.nvim Roadmap
+# Ignition.nvim Roadmap
 
 The roadmap is organized around architectural maturity rather than feature quantity.
 

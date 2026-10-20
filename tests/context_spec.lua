@@ -1,7 +1,7 @@
-local context = require "code-runner.context"
-local shell = require "code-runner.shell"
-local actions = require "code-runner.actions"
-local config = require "code-runner.config"
+local context = require "ignition.context"
+local shell = require "ignition.shell"
+local actions = require "ignition.actions"
+local config = require "ignition.config"
 
 local tmpdir = vim.fn.tempname() .. "/cr_ctx_test"
 vim.fn.mkdir(tmpdir, "p")

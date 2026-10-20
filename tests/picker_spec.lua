@@ -1,5 +1,5 @@
-local picker = require "code-runner.picker"
-local config = require "code-runner.config"
+local picker = require "ignition.picker"
+local config = require "ignition.config"
 
 T.section("picker: fallback vim.ui.select")
 
@@ -96,14 +96,14 @@ if has_volt then
   T.it("abre ventana flotante con título contextual", function()
     config.setup { ui = "volt" }
 
-    picker.select({ "run", "build" }, { title = "CodeRunner · test.lua" }, function() end)
+    picker.select({ "run", "build" }, { title = "Ignition · test.lua" }, function() end)
 
     local found_title = nil
     for _, win in ipairs(vim.api.nvim_list_wins()) do
       local cfg = vim.api.nvim_win_get_config(win)
       if cfg.relative ~= "" and cfg.title then
         local title = vim.inspect(cfg.title) -- tolera string o segmentos {texto, hl}
-        if title:find("CodeRunner · test.lua", 1, true) then
+        if title:find("Ignition · test.lua", 1, true) then
           found_title = title
           break
         end
@@ -153,7 +153,7 @@ if has_volt then
   T.it("el ancho incluye el titulo: no se trunca con items cortos", function()
     config.setup { ui = "volt" }
 
-    local long_title = "CodeRunner - un-nombre-de-archivo-muy-largo.py"
+    local long_title = "Ignition - un-nombre-de-archivo-muy-largo.py"
     picker.select({ "a" }, { title = long_title }, function() end)
 
     local win_w = nil

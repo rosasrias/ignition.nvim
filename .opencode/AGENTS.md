@@ -1,4 +1,4 @@
-# CodeRunner.nvim — Agent Instructions
+# Ignition.nvim — Agent Instructions
 
 ## Before doing anything
 
@@ -191,7 +191,7 @@ ______________________________________________________________________
 
 # Final Principle
 
-CodeRunner.nvim should become more capable without becoming more coupled.
+Ignition.nvim should become more capable without becoming more coupled.
 
 The preferred direction is:
 

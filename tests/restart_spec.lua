@@ -1,5 +1,5 @@
-local restart = require "code-runner.restart"
-local engine = require "code-runner.engine"
+local restart = require "ignition.restart"
+local engine = require "ignition.engine"
 
 local function make_exec(status, now)
   local e = engine.create {

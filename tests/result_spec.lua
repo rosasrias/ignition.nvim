@@ -1,4 +1,4 @@
-local result = require "code-runner.result"
+local result = require "ignition.result"
 
 T.section("result: fields (CONTRACTS §7)")
 

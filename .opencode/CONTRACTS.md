@@ -1,4 +1,4 @@
-# CodeRunner.nvim Domain Contracts
+# Ignition.nvim Domain Contracts
 
 This document defines the conceptual contracts between the main architectural components.
 
@@ -17,12 +17,12 @@ A TaskSpec describes something the user can execute.
 Conceptual shape:
 
 ```lua
----@class CodeRunnerTaskSpec
+---@class IgnitionTaskSpec
 ---@field id string
 ---@field name string
----@field kind CodeRunnerTaskKind
+---@field kind IgnitionTaskKind
 ---@field filetypes string[]|nil
----@field command string|CodeRunnerCommandSpec|function
+---@field command string|IgnitionCommandSpec|function
 ---@field cwd string|function|nil
 ---@field condition function|nil
 ---@field enabled boolean|function|nil
@@ -106,11 +106,11 @@ optional task generators
 Conceptual:
 
 ```lua
----@class CodeRunnerRunner
+---@class IgnitionRunner
 ---@field id string
 ---@field filetypes string[]|nil
 ---@field project table|nil
----@field tasks CodeRunnerTaskSpec[]|function
+---@field tasks IgnitionTaskSpec[]|function
 ```
 
 A Runner does not:
@@ -123,7 +123,7 @@ modify quickfix
 render picker UI
 ```
 
-The declarative form of a Runner is `RunnerSpec` (`lua/code-runner/runner.lua`,
+The declarative form of a Runner is `RunnerSpec` (`lua/ignition/runner.lua`,
 RUN-001 / ADR-016): `{ id, filetypes, project.markers, tasks }` with no
 function values, no filesystem access and no infrastructure imports. Tasks
 inside a RunnerSpec are `TaskSpec`. Detection criteria are declared
@@ -150,15 +150,15 @@ Execution represents one attempt to execute a Task.
 Conceptual:
 
 ```lua
----@class CodeRunnerExecution
+---@class IgnitionExecution
 ---@field id integer|string
 ---@field task_id string
----@field context CodeRunnerContext
----@field command CodeRunnerCommandSpec
----@field status CodeRunnerExecutionStatus
+---@field context IgnitionContext
+---@field command IgnitionCommandSpec
+---@field status IgnitionExecutionStatus
 ---@field started_at number|nil
 ---@field finished_at number|nil
----@field result CodeRunnerResult|nil
+---@field result IgnitionResult|nil
 ```
 
 Possible statuses:
@@ -193,7 +193,7 @@ ______________________________________________________________________
 Conceptual:
 
 ```lua
----@class CodeRunnerResult
+---@class IgnitionResult
 ---@field code integer|nil
 ---@field signal integer|nil
 ---@field stdout string|nil
@@ -222,7 +222,7 @@ CommandSpec represents an executable command after resolution.
 Conceptual:
 
 ```lua
----@class CodeRunnerCommandSpec
+---@class IgnitionCommandSpec
 ---@field executable string
 ---@field args string[]
 ---@field cwd string|nil
@@ -268,14 +268,14 @@ ______________________________________________________________________
 Conceptual:
 
 ```lua
----@class CodeRunnerContext
+---@class IgnitionContext
 ---@field file string|nil
 ---@field filetype string|nil
 ---@field extension string|nil
----@field cursor CodeRunnerCursor|nil
----@field project CodeRunnerProjectContext|nil
----@field test CodeRunnerTestContext|nil
----@field entrypoint CodeRunnerEntrypointContext|nil
+---@field cursor IgnitionCursor|nil
+---@field project IgnitionProjectContext|nil
+---@field test IgnitionTestContext|nil
+---@field entrypoint IgnitionEntrypointContext|nil
 ```
 
 Context should be treated as read-only by task resolution.
@@ -287,7 +287,7 @@ ______________________________________________________________________
 Conceptual:
 
 ```lua
----@class CodeRunnerProjectContext
+---@class IgnitionProjectContext
 ---@field root string|nil
 ---@field marker string|nil
 ---@field kind string|nil
@@ -311,7 +311,7 @@ ______________________________________________________________________
 Conceptual:
 
 ```lua
----@class CodeRunnerTestContext
+---@class IgnitionTestContext
 ---@field name string|nil
 ---@field file string|nil
 ---@field line integer|nil
@@ -329,7 +329,7 @@ ______________________________________________________________________
 Conceptual:
 
 ```lua
----@class CodeRunnerEntrypointContext
+---@class IgnitionEntrypointContext
 ---@field name string|nil
 ---@field file string|nil
 ---@field line integer|nil
@@ -676,19 +676,19 @@ The public API should remain intentionally small.
 Target API:
 
 ```lua
-require("code-runner").setup()
+require("ignition").setup()
 
-require("code-runner").run()
+require("ignition").run()
 
-require("code-runner").run_last()
+require("ignition").run_last()
 
-require("code-runner").stop()
+require("ignition").stop()
 
-require("code-runner").restart()
+require("ignition").restart()
 
-require("code-runner").register_task(task)
+require("ignition").register_task(task)
 
-require("code-runner").register_runner(runner)
+require("ignition").register_runner(runner)
 ```
 
 Internal modules are not automatically public API.

@@ -1,4 +1,4 @@
-local stream = require "code-runner.stream"
+local stream = require "ignition.stream"
 
 T.section("stream: normalización de chunks a líneas")
 
@@ -181,7 +181,7 @@ T.it("acceptance: salida de una build de ejemplo se normaliza sin perder orden",
   T.eq(out.stderr, "go: build failed")
 
   -- alimenta un Result real (EXEC-006) sin UI
-  local result = require "code-runner.result"
+  local result = require "ignition.result"
   local r = result.new { code = 2, stdout = out.stdout, stderr = out.stderr }
   T.truthy(result.failed(r), "Result clasificable desde el stream")
 end)
